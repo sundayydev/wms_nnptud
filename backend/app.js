@@ -32,6 +32,7 @@ app.use('/api/v1/categories', require('./routes/categories'))
 app.use('/api/v1/suppliers', require('./routes/suppliers'))
 app.use('/api/v1/warehouses', require('./routes/warehouses'))
 app.use('/api/v1/purchase-orders', require('./routes/purchaseOrders'))
+app.use('/api/v1/sales-orders', require('./routes/salesorders'))
 mongoose.connect(process.env.MONGO_URI);
 mongoose.connection.on('connected', function () {
   console.log("connected");
