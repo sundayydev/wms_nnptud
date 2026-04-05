@@ -25,17 +25,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
-//app.use('/api/v1/users', usersRouter);
-//app.use('/api/v1/auth', require('./routes/auth'));
+app.use('/api/v1/users', require('./routes/users'));
+app.use('/api/v1/auth', require('./routes/auth'));
 //app.use('/api/v1/carts', require('./routes/carts'));
 app.use('/api/v1/products', require('./routes/products'))
 app.use('/api/v1/categories', require('./routes/categories'))
-//app.use('/api/v1/roles', require('./routes/roles'))
+app.use('/api/v1/roles', require('./routes/roles'))
 //app.use('/api/v1/upload', require('./routes/upload'))
 app.use('/api/v1/suppliers', require('./routes/suppliers'))
 app.use('/api/v1/warehouses', require('./routes/warehouses'))
+app.use('/api/v1/auditlogs', require('./routes/auditlogs'))
 app.use('/api/v1/purchase-orders', require('./routes/purchaseOrders'))
 app.use('/api/v1/sales-orders', require('./routes/salesorders'))
+app.use('/api/v1/shipments', require('./routes/shipments'))
+app.use('/api/v1/customers', require('./routes/customers'))
 mongoose.connect(process.env.MONGO_URI);
 mongoose.connection.on('connected', function () {
   console.log("connected");

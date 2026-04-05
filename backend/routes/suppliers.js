@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let supplierModel = require('../models/Supplier')
+let { logAction } = require('../utils/auditlogHandler')
 
 /* GET all suppliers */
 router.get('/', async function (req, res, next) {
@@ -43,6 +44,7 @@ router.post('/', async function (req, res) {
             address: req.body.address
         });
         await newSupplier.save();
+        logAction(req.user ? req.user._id : null, 'CREATE', 'supplier', newSupplier._id, newSupplier, req.ip)
         res.send(newSupplier);
     } catch (error) {
         res.status(400).send({ message: error.message });
@@ -53,8 +55,10 @@ router.post('/', async function (req, res) {
 router.put('/:id', async function (req, res) {
     try {
         let id = req.params.id;
+        let oldData = await supplierModel.findById(id);
         let result = await supplierModel.findByIdAndUpdate(id, req.body, { new: true });
         if (result) {
+            logAction(req.user ? req.user._id : null, 'UPDATE', 'supplier', id, { old: oldData, new: result }, req.ip)
             res.send(result);
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });
@@ -70,6 +74,7 @@ router.delete('/:id', async function (req, res) {
         let id = req.params.id;
         let result = await supplierModel.findByIdAndDelete(id);
         if (result) {
+            logAction(req.user ? req.user._id : null, 'DELETE', 'supplier', id, result, req.ip)
             res.send({ message: "Deleted successfully", data: result });
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });

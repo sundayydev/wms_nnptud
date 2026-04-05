@@ -3,6 +3,7 @@ var router = express.Router();
 let productModel = require('../models/Product')
 let inventoryModel = require('../models/Inventory')
 let mongoose = require('mongoose')
+let { logAction } = require('../utils/auditlogHandler')
 
 /* GET all products */
 router.get('/', async function (req, res, next) {
@@ -60,6 +61,7 @@ router.post('/', async function (req, res) {
         await newInventory.populate('product');
         await session.commitTransaction();
         await session.endSession();
+        logAction(req.user ? req.user._id : null, 'CREATE', 'product', newProduct._id, newProduct, req.ip)
         res.send({ product: newProduct, inventory: newInventory });
     } catch (error) {
         await session.abortTransaction();
@@ -72,8 +74,10 @@ router.post('/', async function (req, res) {
 router.put('/:id', async function (req, res) {
     try {
         let id = req.params.id;
+        let oldData = await productModel.findById(id);
         let result = await productModel.findByIdAndUpdate(id, req.body, { new: true });
         if (result) {
+            logAction(req.user ? req.user._id : null, 'UPDATE', 'product', id, { old: oldData, new: result }, req.ip)
             res.send(result);
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });
@@ -89,6 +93,7 @@ router.delete('/:id', async function (req, res) {
         let id = req.params.id;
         let result = await productModel.findByIdAndDelete(id);
         if (result) {
+            logAction(req.user ? req.user._id : null, 'DELETE', 'product', id, result, req.ip)
             res.send({ message: "Deleted successfully", data: result });
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });
