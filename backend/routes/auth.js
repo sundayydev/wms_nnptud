@@ -1,14 +1,131 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express')
+let router = express.Router()
+let userController = require('../controllers/users')
+let { RegisterValidator, validatedResult, ChangePasswordValidator } = require('../utils/validator')
+let bcrypt = require('bcrypt')
+let jwt = require('jsonwebtoken')
+let { checkLogin } = require('../utils/authHandler')
+let crypto = require('crypto')
+let { sendMail } = require('../utils/mailHandler')
+let mongoose = require('mongoose')
+let roleModel = require('../schemas/roles')
 
-// POST /api/v1/auth/login
-router.post('/login', function(req, res, next) {
-  res.json({ message: 'Auth login route' });
-});
+router.post('/register', RegisterValidator, validatedResult, async function (req, res, next) {
+    let session = await mongoose.startSession();
+    session.startTransaction()
+    try {
+        let { username, password, email } = req.body;
+        let userRole = await roleModel.findOne({ name: 'user', isDeleted: false })
+        if (!userRole) {
+            res.status(404).send({ message: "role user chua duoc khoi tao" })
+            return
+        }
+        let newUser = await userController.CreateAnUser(
+            username, password, email, userRole._id, session
+        )
+        await session.commitTransaction()
+        session.endSession()
+        res.send(newUser)
+    } catch (error) {
+        await session.abortTransaction()
+        session.endSession()
+        res.status(404).send(error.message)
+    }
+})
 
-// POST /api/v1/auth/register
-router.post('/register', function(req, res, next) {
-  res.json({ message: 'Auth register route' });
-});
+router.post('/login', async function (req, res, next) {
+    let { username, password } = req.body;
+    let user = await userController.FindUserByUsername(username);
+    if (!user) {
+        res.status(404).send({
+            message: "thong tin dang nhap khong dung"
+        })
+        return;
+    }
+    if (!user.lockTime || user.lockTime < Date.now()) {
+        if (bcrypt.compareSync(password, user.password)) {
+            user.loginCount = 0;
+            await user.save();
+            let token = jwt.sign({
+                id: user._id,
+            }, 'secret', {
+                expiresIn: '1h'
+            })
+            res.send({
+                token: token,
+                user: {
+                    _id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role
+                }
+            })
+        } else {
+            user.loginCount++;
+            if (user.loginCount == 3) {
+                user.loginCount = 0;
+                user.lockTime = new Date(Date.now() + 60 * 60 * 1000)
+            }
+            await user.save();
+            res.status(404).send({
+                message: "thong tin dang nhap khong dung"
+            })
+        }
+    } else {
+        res.status(404).send({
+            message: "user dang bi ban"
+        })
+    }
+})
 
-module.exports = router;
+router.post("/logout", checkLogin, function (req, res, next) {
+    res.send("logout thanh cong")
+})
+
+router.post('/changepassword', checkLogin, ChangePasswordValidator, validatedResult, async function (req, res, next) {
+    let { oldPassword, newPassword } = req.body;
+    if (bcrypt.compareSync(oldPassword, req.user.password)) {
+        req.user.password = newPassword;
+        await req.user.save();
+        res.send("doi pass thanh cong")
+    } else {
+        res.status(404).send("old password khong dung")
+    }
+})
+
+router.get('/me', checkLogin, function (req, res, next) {
+    res.send(req.user)
+})
+
+router.post('/forgotpassword', async function (req, res, next) {
+    let email = req.body.email;
+    let user = await userController.FindUserByEmail(email);
+    if (user) {
+        user.forgotPasswordToken = crypto.randomBytes(32).toString('hex');
+        user.forgotPasswordTokenExp = Date.now() + 10 * 60 * 1000;
+        await user.save();
+        let url = "http://localhost:3000/api/v1/auth/resetpassword/" + user.forgotPasswordToken
+        sendMail(user.email, url);
+    }
+    res.send("check mail de cap nhat pass");
+})
+
+router.post('/resetpassword/:token', async function (req, res, next) {
+    let token = req.params.token;
+    let user = await userController.FindUserByToken(token);
+    if (!user) {
+        res.status(404).send("token loi")
+        return;
+    }
+    if (user.forgotPasswordTokenExp > Date.now()) {
+        user.password = req.body.password;
+        user.forgotPasswordToken = null;
+        user.forgotPasswordTokenExp = null;
+        await user.save()
+        res.send("cap nhat thanh cong")
+    } else {
+        res.status(404).send("ma het han")
+    }
+})
+
+module.exports = router
