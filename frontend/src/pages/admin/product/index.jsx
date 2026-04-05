@@ -7,25 +7,32 @@ import { productService } from '../../../services/productService';
 import { categoryService } from '../../../services/categoryService';
 import CustomEmpty from '../../../components/CustomEmpty';
 
+import ImportExcelModal from './ImportExcelModal';
+import { warehouseService } from '../../../services/warehouseService';
+
 export default function AdminProduct() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [data, setData] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = async (searchParams = '') => {
     try {
       setLoading(true);
-      const [productsRes, categoriesRes] = await Promise.all([
+      const [productsRes, categoriesRes, warehousesRes] = await Promise.all([
         productService.getAll(searchParams),
-        categoryService.getAll()
+        categoryService.getAll(),
+        warehouseService.getAll()
       ]);
       const mappedData = productsRes.map(item => ({ ...item, key: item._id }));
       setData(mappedData);
       setCategories(categoriesRes || []);
+      setWarehouses(warehousesRes || []);
     } catch (error) {
-      message.error("Lỗi khi tải dữ liệu: " + error);
+      // ignore init
     } finally {
       setLoading(false);
     }
@@ -71,7 +78,7 @@ export default function AdminProduct() {
       dataIndex: 'unit', 
       key: 'unit',
       align: 'center',
-      render: (val) => <Tag bordered={false} className="bg-gray-100 text-gray-600 px-2 rounded">{val}</Tag>
+      render: (val) => <Tag variant="filled" className="bg-gray-100 text-gray-600 px-2 rounded">{val}</Tag>
     },
     {
       title: 'Thao tác',
@@ -118,7 +125,7 @@ export default function AdminProduct() {
         </div>
       </div>
 
-      <ProductFilter categories={categories} onSearch={handleSearch} onOpenModal={() => { setEditingRecord(null); setModalOpen(true); }} />
+      <ProductFilter categories={categories} onSearch={handleSearch} onOpenModal={() => { setEditingRecord(null); setModalOpen(true); }} onOpenImportModal={() => setImportModalOpen(true)} />
 
       <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6" styles={{ body: { padding: 0 } }}>
         <Table 
@@ -136,6 +143,8 @@ export default function AdminProduct() {
       </Card>
 
       <ProductModal open={modalOpen} categories={categories} onCancel={() => setModalOpen(false)} editingRecord={editingRecord} refreshData={fetchData} />
+      
+      <ImportExcelModal open={importModalOpen} warehouses={warehouses} onCancel={() => setImportModalOpen(false)} refreshData={fetchData} />
     </div>
   );
 }
