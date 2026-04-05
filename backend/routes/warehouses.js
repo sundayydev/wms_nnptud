@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-let warehouseModel = require('../models/Warehouse')
-let { logAction } = require('../utils/auditlogHandler')
+let warehouseModel = require('../models/Warehouse');
+let { logAction } = require('../utils/auditlogHandler');
+require('../models/User'); // Required for populate('manager')
 
 /* GET all warehouses */
 router.get('/', async function (req, res, next) {

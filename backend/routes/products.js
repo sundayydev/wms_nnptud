@@ -9,7 +9,7 @@ let { logAction } = require('../utils/auditlogHandler')
 router.get('/', async function (req, res, next) {
     let queries = req.query;
     let nameQ = queries.name ? queries.name : '';
-    let max = queries.max ? Number(queries.max) : 10000;
+    let max = queries.max ? Number(queries.max) : Number.MAX_SAFE_INTEGER;
     let min = queries.min ? Number(queries.min) : 0;
     let filter = {
         price: { $gte: min, $lte: max }

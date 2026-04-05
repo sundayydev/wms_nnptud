@@ -1,0 +1,95 @@
+var express = require('express');
+var router = express.Router();
+let purchaseOrderModel = require('../models/PurchaseOrder');
+
+/* GET all purchase orders */
+router.get('/', async function (req, res, next) {
+    try {
+        let queries = req.query;
+        let filter = {};
+
+        if (queries.poNumber) filter.poNumber = new RegExp(queries.poNumber, 'i');
+        if (queries.status) filter.status = queries.status;
+        if (queries.supplier) filter.supplier = queries.supplier;
+        if (queries.warehouse) filter.warehouse = queries.warehouse;
+
+        let data = await purchaseOrderModel.find(filter);
+
+        res.send(data);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
+/* GET purchase order by ID */
+router.get('/:id', async function (req, res, next) {
+    try {
+        let id = req.params.id;
+        let result = await purchaseOrderModel.findById(id);
+
+        if (result) {
+            res.send(result);
+        } else {
+            res.status(404).send({ message: 'ID NOT FOUND' });
+        }
+    } catch (error) {
+        res.status(404).send({ message: error.message });
+    }
+});
+
+/* POST create purchase order */
+router.post('/', async function (req, res) {
+    try {
+        let newPurchaseOrder = new purchaseOrderModel({
+            poNumber: req.body.poNumber,
+            supplier: req.body.supplier,
+            warehouse: req.body.warehouse,
+            items: req.body.items,
+            totalAmount: req.body.totalAmount,
+            status: req.body.status,
+            createdBy: req.body.createdBy
+        });
+
+        await newPurchaseOrder.save();
+
+        let result = await purchaseOrderModel.findById(newPurchaseOrder._id);
+
+        res.send(result);
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
+
+/* PUT update purchase order */
+router.put('/:id', async function (req, res) {
+    try {
+        let id = req.params.id;
+        let result = await purchaseOrderModel.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (result) {
+            res.send(result);
+        } else {
+            res.status(404).send({ message: 'ID NOT FOUND' });
+        }
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
+
+/* DELETE purchase order */
+router.delete('/:id', async function (req, res) {
+    try {
+        let id = req.params.id;
+        let result = await purchaseOrderModel.findByIdAndDelete(id);
+
+        if (result) {
+            res.send({ message: 'Deleted successfully', data: result });
+        } else {
+            res.status(404).send({ message: 'ID NOT FOUND' });
+        }
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
+
+module.exports = router;
