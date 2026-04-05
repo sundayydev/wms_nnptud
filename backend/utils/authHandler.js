@@ -6,6 +6,7 @@ module.exports = {
             let token = req.headers.authorization;
             if (!token || !token.startsWith('Bearer')) {
                 res.status(404).send("ban chua dang nhap")
+                return
             }
             token = token.split(" ")[1];
             let result = jwt.verify(token, "secret");
@@ -22,6 +23,13 @@ module.exports = {
             }
         } catch (error) {
             res.status(404).send("ban chua dang nhap")
+        }
+    },
+    checkAdmin: async function (req, res, next) {
+        if (req.user && req.user.role && req.user.role.name == 'admin') {
+            next()
+        } else {
+            res.status(403).send("ban khong co quyen truy cap")
         }
     }
 }
