@@ -15,6 +15,9 @@ import ManageCategories from '../pages/admin/ManageCategories';
 import AdminProduct from '../pages/admin/product';
 import AdminWarehouse from '../pages/admin/warehouse';
 import AdminSupplier from '../pages/admin/supplier';
+import AdminPurchaseOrder from '../pages/admin/purchaseOrder';
+import AdminSalesOrder from '../pages/admin/salesOrder';
+import AdminInventory from '../pages/admin/inventory';
 
 export default function AppRouter() {
   return (
@@ -33,6 +36,9 @@ export default function AppRouter() {
           <Route path="categories" element={<ManageCategories />} />
           <Route path="warehouses" element={<AdminWarehouse />} />
           <Route path="suppliers" element={<AdminSupplier />} />
+          <Route path="purchase-orders" element={<AdminPurchaseOrder />} />
+          <Route path="sales-orders" element={<AdminSalesOrder />} />
+          <Route path="inventories" element={<AdminInventory />} />
           <Route path="users" element={<div className="p-4 text-xl">Phân Quyền Hệ Thống</div>} />
         </Route>
 

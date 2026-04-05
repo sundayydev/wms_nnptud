@@ -1,4 +1,5 @@
 import { Modal, Form, Input, message } from 'antd';
+import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { supplierService } from '../../../services/supplierService';
 
@@ -23,10 +24,10 @@ export default function SupplierModal({ open, onCancel, editingRecord, refreshDa
         try {
           if (editingRecord) {
              await supplierService.update(editingRecord._id, values);
-             message.success("Cập nhật nhà cung cấp thành công 🎉");
+             message.success("Cập nhật nhà cung cấp thành công!");
           } else {
              await supplierService.create(values);
-             message.success("Thêm mới nhà cung cấp thành công 🚀");
+             message.success("Thêm mới nhà cung cấp thành công!");
           }
           refreshData();
           onCancel();
@@ -45,7 +46,7 @@ export default function SupplierModal({ open, onCancel, editingRecord, refreshDa
     <Modal
       title={
         <div className="text-2xl font-extrabold text-gray-800 pb-4 border-b border-gray-100 flex items-center gap-2">
-          {editingRecord ? "🤝 Cập Nhật Nhà Cung Cấp" : "🏢 Thêm Mới Nhà Cung Cấp"}
+          {editingRecord ? <><EditOutlined className="text-green-600" /> Cập Nhật Nhà Cung Cấp</> : <><PlusCircleOutlined className="text-green-500" /> Thêm Mới Nhà Cung Cấp</>}
         </div>
       }
       open={open}

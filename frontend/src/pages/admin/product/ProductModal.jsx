@@ -1,5 +1,5 @@
 import { Modal, Form, Input, InputNumber, Select, message, Upload, Button } from 'antd';
-import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
+import { InboxOutlined, UploadOutlined, EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { productService } from '../../../services/productService';
 
@@ -26,12 +26,12 @@ export default function ProductModal({ open, categories = [], onCancel, editingR
         try {
           if (editingRecord) {
              await productService.update(editingRecord._id, values);
-             message.success("Cập nhật sản phẩm thành công 🎉");
+             message.success("Cập nhật sản phẩm thành công!");
           } else {
              // In a real app we might pick warehouse, for now it's hardcoded as before
              const createData = { ...values, warehouse: '661c3d4e5f6a7b8c9d0e1f2a' } 
              await productService.create(createData);
-             message.success("Thêm mới sản phẩm thành công 🚀");
+             message.success("Thêm mới sản phẩm thành công!");
           }
           refreshData();
           onCancel();
@@ -50,7 +50,7 @@ export default function ProductModal({ open, categories = [], onCancel, editingR
     <Modal
       title={
         <div className="text-2xl font-extrabold text-gray-800 pb-4 border-b border-gray-100 flex items-center gap-2">
-          {editingRecord ? "✏️ Cập Nhật Sản Phẩm" : "✨ Thêm Mới Sản Phẩm"}
+          {editingRecord ? <><EditOutlined className="text-blue-500" /> Cập Nhật Sản Phẩm</> : <><PlusCircleOutlined className="text-green-500" /> Thêm Mới Sản Phẩm</>}
         </div>
       }
       open={open}

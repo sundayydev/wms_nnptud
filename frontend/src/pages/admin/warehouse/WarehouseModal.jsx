@@ -1,4 +1,5 @@
 import { Modal, Form, Input, InputNumber, Select, message } from 'antd';
+import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { warehouseService } from '../../../services/warehouseService';
 
@@ -23,10 +24,10 @@ export default function WarehouseModal({ open, users = [], onCancel, editingReco
         try {
           if (editingRecord) {
              await warehouseService.update(editingRecord._id, values);
-             message.success("Cập nhật kho thành công 🎉");
+             message.success("Cập nhật kho thành công!");
           } else {
              await warehouseService.create(values);
-             message.success("Thêm mới kho thành công 🚀");
+             message.success("Thêm mới kho thành công!");
           }
           refreshData();
           onCancel();
@@ -45,7 +46,7 @@ export default function WarehouseModal({ open, users = [], onCancel, editingReco
     <Modal
       title={
         <div className="text-2xl font-extrabold text-gray-800 pb-4 border-b border-gray-100 flex items-center gap-2">
-          {editingRecord ? "🏫 Cập Nhật Kho Hành" : "🏗️ Thêm Mới Kho Hàng"}
+          {editingRecord ? <><EditOutlined className="text-indigo-500" /> Cập Nhật Kho Hàng</> : <><PlusCircleOutlined className="text-green-500" /> Thêm Mới Kho Hàng</>}
         </div>
       }
       open={open}
