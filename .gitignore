@@ -1,0 +1,20 @@
+# AI agent config
+.agents/
+.github/
+
+# Postman
+backend/postman/
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
