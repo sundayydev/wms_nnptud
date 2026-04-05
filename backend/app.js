@@ -25,8 +25,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
-//app.use('/api/v1/users', usersRouter);
-//app.use('/api/v1/auth', require('./routes/auth'));
+
+app.use('/api/v1/users', require('./routes/users'));
+app.use('/api/v1/auth', require('./routes/auth'));
 //app.use('/api/v1/carts', require('./routes/carts'));
 app.use('/api/v1/products', require('./routes/products'))
 app.use('/api/v1/categories', require('./routes/categories'))
