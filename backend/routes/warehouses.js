@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let warehouseModel = require('../models/Warehouse');
+let { logAction } = require('../utils/auditlogHandler');
 require('../models/User'); // Required for populate('manager')
 
 /* GET all warehouses */
@@ -49,6 +50,7 @@ router.post('/', async function (req, res) {
             capacity: req.body.capacity
         });
         await newWarehouse.save();
+        logAction(req.user ? req.user._id : null, 'CREATE', 'warehouse', newWarehouse._id, newWarehouse, req.ip)
         res.send(newWarehouse);
     } catch (error) {
         res.status(400).send({ message: error.message });
@@ -59,8 +61,10 @@ router.post('/', async function (req, res) {
 router.put('/:id', async function (req, res) {
     try {
         let id = req.params.id;
+        let oldData = await warehouseModel.findById(id);
         let result = await warehouseModel.findByIdAndUpdate(id, req.body, { new: true });
         if (result) {
+            logAction(req.user ? req.user._id : null, 'UPDATE', 'warehouse', id, { old: oldData, new: result }, req.ip)
             res.send(result);
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });
@@ -76,6 +80,7 @@ router.delete('/:id', async function (req, res) {
         let id = req.params.id;
         let result = await warehouseModel.findByIdAndDelete(id);
         if (result) {
+            logAction(req.user ? req.user._id : null, 'DELETE', 'warehouse', id, result, req.ip)
             res.send({ message: "Deleted successfully", data: result });
         } else {
             res.status(404).send({ message: "ID NOT FOUND" });
