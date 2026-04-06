@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, ExportOutlined } from '@ant-design/icons';
+import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag, Modal } from 'antd';
+import { EditOutlined, DeleteOutlined, ExportOutlined, PrinterOutlined } from '@ant-design/icons';
+import API_URL from '../../../services/api';
 import SalesOrderFilter from './SalesOrderFilter';
 import SalesOrderModal from './SalesOrderModal';
 import { salesOrderService } from '../../../services/salesOrderService';
@@ -122,6 +123,22 @@ export default function AdminSalesOrder() {
       width: 120,
       render: (_, record) => (
         <Space size="middle">
+          <Tooltip title="In Phiếu Xuất Kho">
+            <Button
+              type="text"
+              className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors"
+              icon={<PrinterOutlined />}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận in phiếu',
+                  content: 'Bạn có muốn xuất và in phiếu yêu cầu xuất hàng này?',
+                  okText: 'Đồng ý',
+                  cancelText: 'Hủy',
+                  onOk: () => window.open(`${API_URL}/print/sales-orders/${record._id}`, '_blank')
+                });
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Chỉnh sửa SO">
             <Button 
                 type="text" 

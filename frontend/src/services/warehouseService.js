@@ -1,5 +1,10 @@
 import API_URL, { handleResponse } from './api';
 
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 export const warehouseService = {
   getAll: async (queryParams = '') => {
     const response = await fetch(`${API_URL}/warehouses${queryParams}`);
@@ -14,7 +19,7 @@ export const warehouseService = {
   create: async (data) => {
     const response = await fetch(`${API_URL}/warehouses`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -23,7 +28,7 @@ export const warehouseService = {
   update: async (id, data) => {
     const response = await fetch(`${API_URL}/warehouses/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -31,7 +36,8 @@ export const warehouseService = {
 
   delete: async (id) => {
     const response = await fetch(`${API_URL}/warehouses/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: { ...getAuthHeader() }
     });
     return handleResponse(response);
   }

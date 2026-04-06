@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
-import { DashboardOutlined, ShoppingCartOutlined, AppstoreOutlined, TeamOutlined, LogoutOutlined, ShopOutlined, ImportOutlined, ExportOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingCartOutlined, AppstoreOutlined, TeamOutlined, LogoutOutlined, ShopOutlined, ImportOutlined, ExportOutlined, DatabaseOutlined, FileSearchOutlined } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
 
@@ -12,9 +12,11 @@ export default function AdminLayout() {
     { key: 'warehouses', icon: <ShopOutlined />, label: <Link to="/admin/warehouses">Kho Hàng</Link> },
     { key: 'inventories', icon: <DatabaseOutlined />, label: <Link to="/admin/inventories">Tồn Kho</Link> },
     { key: 'suppliers', icon: <TeamOutlined />, label: <Link to="/admin/suppliers">Nhà Cung Cấp</Link> },
+    { key: 'customers', icon: <TeamOutlined />, label: <Link to="/admin/customers">Khách Hàng</Link> },
     { key: 'purchase-orders', icon: <ImportOutlined />, label: <Link to="/admin/purchase-orders">Nhập Hàng (PO)</Link> },
     { key: 'sales-orders', icon: <ExportOutlined />, label: <Link to="/admin/sales-orders">Xuất Hàng (SO)</Link> },
     { key: 'users', icon: <TeamOutlined />, label: <Link to="/admin/users">Tài Khoản</Link> },
+    { key: 'auditlog', icon: <FileSearchOutlined />, label: <Link to="/admin/auditlog">Lịch Sử Thao Tác</Link> },
   ];
 
   return (

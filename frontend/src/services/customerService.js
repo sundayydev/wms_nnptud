@@ -1,14 +1,44 @@
 import API_URL, { handleResponse } from './api';
 
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 export const customerService = {
   getAll: async (queryParams = '') => {
-    // Fallback if backend doesn't have it yet, we just mock or handle safely
-    try {
-      const response = await fetch(`${API_URL}/customers${queryParams}`);
-      if (!response.ok) return []; // Ignore 404s for demo UI
-      return handleResponse(response);
-    } catch {
-      return [];
-    }
+    const response = await fetch(`${API_URL}/customers${queryParams}`);
+    return handleResponse(response);
+  },
+
+  getById: async (id) => {
+    const response = await fetch(`${API_URL}/customers/${id}`);
+    return handleResponse(response);
+  },
+
+  create: async (data) => {
+    const response = await fetch(`${API_URL}/customers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  update: async (id, data) => {
+    const response = await fetch(`${API_URL}/customers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  delete: async (id) => {
+    const response = await fetch(`${API_URL}/customers/${id}`, {
+      method: 'DELETE',
+      headers: { ...getAuthHeader() }
+    });
+    return handleResponse(response);
   }
 };

@@ -6,6 +6,7 @@ import { salesOrderService } from '../../../services/salesOrderService';
 export default function SalesOrderModal({ open, customers = [], warehouses = [], products = [], onCancel, editingRecord, refreshData }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
   
   useEffect(() => {
     if (open) {
@@ -47,13 +48,11 @@ export default function SalesOrderModal({ open, customers = [], warehouses = [],
       .then(async (values) => {
         setIsSubmitting(true);
         try {
-          if (!values.createdBy) {
-             values.createdBy = "661a1b2c3d4e5f6a7b8c9d0a"; // Fallback ID if not logged in context
-          }
           if (editingRecord) {
              await salesOrderService.update(editingRecord._id, values);
              message.success("Cập nhật Sales Order thành công!");
           } else {
+             values.createdBy = currentUser?._id;
              await salesOrderService.create(values);
              message.success("Thêm mới Sales Order thành công!");
           }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag, Modal, Select } from 'antd';
+import { EditOutlined, DeleteOutlined, DatabaseOutlined, PrinterOutlined } from '@ant-design/icons';
+import API_URL from '../../../services/api';
 import InventoryFilter from './InventoryFilter';
 import InventoryModal from './InventoryModal';
 import { inventoryService } from '../../../services/inventoryService';
@@ -16,6 +17,8 @@ export default function AdminInventory() {
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [kiemKeModalOpen, setKiemKeModalOpen] = useState(false);
+  const [kiemKeWarehouseId, setKiemKeWarehouseId] = useState(null);
 
   const fetchData = async (searchParams = '') => {
     try {
@@ -144,6 +147,18 @@ export default function AdminInventory() {
         onOpenModal={() => { setEditingRecord(null); setModalOpen(true); }} 
       />
 
+      {/* Button In Phiếu Kiểm Kê */}
+      <div className="mb-4 flex justify-end">
+        <Button
+          icon={<PrinterOutlined />}
+          size="large"
+          onClick={() => { setKiemKeWarehouseId(null); setKiemKeModalOpen(true); }}
+          className="rounded-lg font-semibold text-green-700 bg-green-50 border-green-200 hover:bg-green-100 shadow-sm"
+        >
+          In Phiếu Kiểm Kê
+        </Button>
+      </div>
+
       <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6" styles={{ body: { padding: 0 } }}>
         <Table 
           loading={loading} 
@@ -166,6 +181,38 @@ export default function AdminInventory() {
         editingRecord={editingRecord} 
         refreshData={fetchData} 
       />
+
+      {/* Modal chọn kho để in phiếu kiểm kê */}
+      <Modal
+        title={<span className="font-bold text-gray-800">In Phiếu Kiểm Kê</span>}
+        open={kiemKeModalOpen}
+        onCancel={() => setKiemKeModalOpen(false)}
+        onOk={() => {
+          const url = kiemKeWarehouseId
+            ? `${API_URL}/print/inventories?warehouse=${kiemKeWarehouseId}`
+            : `${API_URL}/print/inventories`;
+          window.open(url, '_blank');
+          setKiemKeModalOpen(false);
+        }}
+        okText="In Phiếu"
+        cancelText="Hủy"
+        okButtonProps={{ icon: <PrinterOutlined />, className: 'bg-green-600 border-0 hover:bg-green-500' }}
+        centered
+        width={420}
+      >
+        <p className="text-gray-500 mb-3">Chọn kho cần kiểm kê (bỏ trống để xuất toàn bộ):</p>
+        <Select
+          allowClear
+          showSearch
+          placeholder="Tất cả các kho"
+          className="w-full"
+          size="large"
+          value={kiemKeWarehouseId}
+          onChange={(val) => setKiemKeWarehouseId(val)}
+          options={warehouses.map(w => ({ value: w._id, label: w.name }))}
+          filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+        />
+      </Modal>
     </div>
   );
 }

@@ -1,45 +1,72 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
-import MainLayout from '../layouts/MainLayout';
 import AdminLayout from '../layouts/AdminLayout';
+import UserLayout from '../layouts/UserLayout';
 
-// Client Pages
-import Home from '../pages/Home';
+// Guards
+import ProtectedRoute from '../components/ProtectedRoute';
+
+// Auth Pages
 import Login from '../pages/Login';
-import ClientProduct from '../pages/main/product';
+import SignUp from '../pages/SignUp';
 
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard';
-import ManageCategories from '../pages/admin/ManageCategories';
+import AdminCategory from '../pages/admin/category';
+import AdminCustomer from '../pages/admin/customer';
 import AdminProduct from '../pages/admin/product';
 import AdminWarehouse from '../pages/admin/warehouse';
 import AdminSupplier from '../pages/admin/supplier';
 import AdminPurchaseOrder from '../pages/admin/purchaseOrder';
 import AdminSalesOrder from '../pages/admin/salesOrder';
 import AdminInventory from '../pages/admin/inventory';
+import AdminUser from '../pages/admin/user';
+import AuditLog from '../pages/admin/AuditLog';
+
+// User Pages (nhân viên kho)
+import UserDashboard from '../pages/user/Dashboard';
+import UserProducts from '../pages/user/Products';
+import UserInventory from '../pages/user/Inventory';
+import UserPurchaseOrders from '../pages/user/PurchaseOrders';
+import UserSalesOrders from '../pages/user/SalesOrders';
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Home />} />
-          <Route path="products" element={<ClientProduct />} />
-          <Route path="login" element={<Login />} />
+        {/* Trang chủ → login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        {/* Admin Routes */}
+        <Route element={<ProtectedRoute requiredRole="admin" />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<AdminProduct />} />
+            <Route path="categories" element={<AdminCategory />} />
+            <Route path="customers" element={<AdminCustomer />} />
+            <Route path="warehouses" element={<AdminWarehouse />} />
+            <Route path="suppliers" element={<AdminSupplier />} />
+            <Route path="purchase-orders" element={<AdminPurchaseOrder />} />
+            <Route path="sales-orders" element={<AdminSalesOrder />} />
+            <Route path="inventories" element={<AdminInventory />} />
+            <Route path="users" element={<AdminUser />} />
+            <Route path="auditlog" element={<AuditLog />} />
+          </Route>
         </Route>
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="products" element={<AdminProduct />} />
-          <Route path="categories" element={<ManageCategories />} />
-          <Route path="warehouses" element={<AdminWarehouse />} />
-          <Route path="suppliers" element={<AdminSupplier />} />
-          <Route path="purchase-orders" element={<AdminPurchaseOrder />} />
-          <Route path="sales-orders" element={<AdminSalesOrder />} />
-          <Route path="inventories" element={<AdminInventory />} />
-          <Route path="users" element={<div className="p-4 text-xl">Phân Quyền Hệ Thống</div>} />
+        {/* User Routes - nhân viên kho */}
+        <Route element={<ProtectedRoute requiredRole="user" />}>
+          <Route path="/user" element={<UserLayout />}>
+            <Route index element={<UserDashboard />} />
+            <Route path="products" element={<UserProducts />} />
+            <Route path="inventories" element={<UserInventory />} />
+            <Route path="purchase-orders" element={<UserPurchaseOrders />} />
+            <Route path="sales-orders" element={<UserSalesOrders />} />
+          </Route>
         </Route>
 
         <Route path="*" element={
@@ -52,3 +79,4 @@ export default function AppRouter() {
     </BrowserRouter>
   );
 }
+

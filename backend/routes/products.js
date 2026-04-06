@@ -4,6 +4,7 @@ let productModel = require('../models/Product')
 let inventoryModel = require('../models/Inventory')
 let mongoose = require('mongoose')
 let { logAction } = require('../utils/auditlogHandler')
+let { checkLogin } = require('../utils/authHandler')
 
 /* GET all products */
 router.get('/', async function (req, res, next) {
@@ -39,7 +40,7 @@ router.get('/:id', async function (req, res, next) {
 });
 
 /* POST create product */
-router.post('/', async function (req, res) {
+router.post('/', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -71,7 +72,7 @@ router.post('/', async function (req, res) {
 });
 
 /* PUT update product */
-router.put('/:id', async function (req, res) {
+router.put('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let oldData = await productModel.findById(id);
@@ -88,7 +89,7 @@ router.put('/:id', async function (req, res) {
 });
 
 /* DELETE product */
-router.delete('/:id', async function (req, res) {
+router.delete('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let result = await productModel.findByIdAndDelete(id);
