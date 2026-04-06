@@ -8,11 +8,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Gửi email reset password
- * @param {string} to - Địa chỉ email nhận
- * @param {string} resetUrl - Link reset password
- */
 async function sendMail(to, resetUrl) {
   const mailOptions = {
     from: `"WMS System" <${process.env.MAIL_USER}>`,
@@ -33,4 +28,29 @@ async function sendMail(to, resetUrl) {
   }
 }
 
-module.exports = { sendMail };
+async function sendLowStockMail(to, productName, warehouseName, quantity) {
+  const mailOptions = {
+    from: `"WMS System" <${process.env.MAIL_USER}>`,
+    to,
+    subject: ` Cảnh báo tồn kho thấp: ${productName}`,
+    html: `
+      <h2> Cảnh báo tồn kho thấp</h2>
+      <p>Hệ thống WMS phát hiện sản phẩm dưới ngưỡng tồn kho tối thiểu.</p>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+        <tr><td><strong>Sản phẩm</strong></td><td>${productName}</td></tr>
+        <tr><td><strong>Kho</strong></td><td>${warehouseName}</td></tr>
+        <tr><td><strong>Số lượng còn lại</strong></td><td style="color:red;"><strong>${quantity}</strong></td></tr>
+      </table>
+      <p>Vui lòng kiểm tra và nhập hàng kịp thời.</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Đã gửi mail cảnh báo tồn kho thấp tới: ${to}`);
+  } catch (err) {
+    console.error('Gửi mail cảnh báo thất bại:', err.message);
+  }
+}
+
+module.exports = { sendMail, sendLowStockMail };

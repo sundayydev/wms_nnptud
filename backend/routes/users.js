@@ -7,8 +7,8 @@ let { CreateUserValidator, ModifyUserValidator, validatedResult } = require('../
 let { checkLogin, checkAdmin } = require('../utils/authHandler')
 let mongoose = require('mongoose')
 
-// GET all users - admin only
-router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
+// GET all users
+router.get('/', async function (req, res, next) {
     let data = await userModel.find({ isDeleted: false }).populate('role')
     res.send(data)
 })
@@ -63,10 +63,14 @@ router.post('/', checkLogin, checkAdmin, CreateUserValidator, validatedResult, a
 router.put('/:id', checkLogin, checkAdmin, ModifyUserValidator, validatedResult, async function (req, res, next) {
     try {
         let id = req.params.id;
-        let result = await userModel.findByIdAndUpdate(
-            id, req.body, { new: true }
-        ).populate('role')
-        res.send(result)
+        let userToUpdate = await userModel.findById(id);
+        if (!userToUpdate) return res.status(404).send({ message: "id not found" });
+        
+        Object.assign(userToUpdate, req.body);
+        await userToUpdate.save();
+
+        await userToUpdate.populate('role');
+        res.send(userToUpdate);
     } catch (error) {
         res.status(404).send({ message: error.message })
     }

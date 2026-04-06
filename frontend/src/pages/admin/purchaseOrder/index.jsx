@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, ImportOutlined } from '@ant-design/icons';
+import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag, Modal } from 'antd';
+import { EditOutlined, DeleteOutlined, ImportOutlined, PrinterOutlined } from '@ant-design/icons';
+import API_URL from '../../../services/api';
 import PurchaseOrderFilter from './PurchaseOrderFilter';
 import PurchaseOrderModal from './PurchaseOrderModal';
 import { purchaseOrderService } from '../../../services/purchaseOrderService';
@@ -121,6 +122,22 @@ export default function AdminPurchaseOrder() {
       width: 120,
       render: (_, record) => (
         <Space size="middle">
+          <Tooltip title="In Phiếu Nhập Kho">
+            <Button
+              type="text"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
+              icon={<PrinterOutlined />}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận in phiếu',
+                  content: 'Bạn có muốn xuất và in phiếu yêu cầu nhập kho này?',
+                  okText: 'Đồng ý',
+                  cancelText: 'Hủy',
+                  onOk: () => window.open(`${API_URL}/print/purchase-orders/${record._id}`, '_blank')
+                });
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Chỉnh sửa PO">
             <Button 
                 type="text" 

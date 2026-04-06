@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 let categoryModel = require('../models/Category')
 let { logAction } = require('../utils/auditlogHandler')
+let { checkLogin } = require('../utils/authHandler')
 
 /* GET all categories */
 router.get('/', async function (req, res, next) {
@@ -25,7 +26,7 @@ router.get('/:id', async function (req, res, next) {
 });
 
 /* POST create category */
-router.post('/', async function (req, res) {
+router.post('/', checkLogin, async function (req, res) {
   try {
     let newCate = new categoryModel({
       name: req.body.name,
@@ -41,7 +42,7 @@ router.post('/', async function (req, res) {
 });
 
 /* PUT update category */
-router.put('/:id', async function (req, res) {
+router.put('/:id', checkLogin, async function (req, res) {
   try {
     let id = req.params.id;
     let oldData = await categoryModel.findById(id);
@@ -58,7 +59,7 @@ router.put('/:id', async function (req, res) {
 });
 
 /* DELETE category */
-router.delete('/:id', async function (req, res) {
+router.delete('/:id', checkLogin, async function (req, res) {
   try {
     let id = req.params.id;
     let result = await categoryModel.findByIdAndDelete(id);

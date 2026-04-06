@@ -6,6 +6,7 @@ import { purchaseOrderService } from '../../../services/purchaseOrderService';
 export default function PurchaseOrderModal({ open, suppliers = [], warehouses = [], products = [], onCancel, editingRecord, refreshData }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
   
   useEffect(() => {
     if (open) {
@@ -47,13 +48,11 @@ export default function PurchaseOrderModal({ open, suppliers = [], warehouses = 
       .then(async (values) => {
         setIsSubmitting(true);
         try {
-          if (!values.createdBy) {
-             values.createdBy = "661a1b2c3d4e5f6a7b8c9d0a"; // Fallback ID if not logged in context
-          }
           if (editingRecord) {
              await purchaseOrderService.update(editingRecord._id, values);
              message.success("Cập nhật Purchase Order thành công!");
           } else {
+             values.createdBy = currentUser?._id;
              await purchaseOrderService.create(values);
              message.success("Thêm mới Purchase Order thành công!");
           }

@@ -1,22 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 
-export default function Login() {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+export default function SignUp() {
+  const [formData, setFormData] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMsg(location.state.message);
-      window.history.replaceState({}, document.title)
-    }
-  }, [location]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,22 +16,18 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccessMsg('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
     setLoading(true);
-
     try {
-      const data = await authService.login(formData.username, formData.password);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      const roleName = data.user.role?.name;
-      if (roleName === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/user');
-      }
+      await authService.register(formData.username, formData.email, formData.password);
+      navigate('/login', { state: { message: 'Đăng ký thành công. Vui lòng đăng nhập.' } });
     } catch (err) {
-      setError(err?.message || err?.toString() || 'Sai tên đăng nhập hoặc mật khẩu');
+      setError(err?.message || err?.toString() || 'Đã có lỗi xảy ra khi đăng ký');
     } finally {
       setLoading(false);
     }
@@ -50,22 +36,16 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[400px] border border-gray-100">
-        <h1 className="text-3xl font-bold mb-2 text-center text-blue-600">Đăng Nhập</h1>
-        <p className="text-gray-500 text-center mb-8">Vui lòng đăng nhập để tiếp tục</p>
+        <h1 className="text-3xl font-bold mb-2 text-center text-blue-600">Đăng Ký</h1>
+        <p className="text-gray-500 text-center mb-8">Tạo tài khoản mới</p>
 
-        {successMsg && (
-          <div className="bg-green-50 text-green-600 p-3 rounded mb-4 text-sm">
-            {successMsg}
-          </div>
-        )}
-        
         {error && (
           <div className="bg-red-50 text-red-500 p-3 rounded mb-4 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
             <input
@@ -75,6 +55,19 @@ export default function Login() {
               placeholder="Nhập tên đăng nhập"
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.username}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Nhập địa chỉ email"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.email}
               onChange={handleInputChange}
             />
           </div>
@@ -92,6 +85,19 @@ export default function Login() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              required
+              placeholder="Xác nhận mật khẩu"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -99,14 +105,14 @@ export default function Login() {
               loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {loading ? 'Đang xử lý...' : 'Đăng Nhập'}
+            {loading ? 'Đang xử lý...' : 'Đăng Ký'}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          Chưa có tài khoản?{' '}
-          <Link to="/signup" className="text-blue-600 font-medium hover:underline">
-            Đăng ký ngay
+          Đã có tài khoản?{' '}
+          <Link to="/login" className="text-blue-600 font-medium hover:underline">
+            Đăng nhập ngay
           </Link>
         </div>
       </div>

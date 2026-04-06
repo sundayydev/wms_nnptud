@@ -17,17 +17,20 @@ export default function AdminWarehouse() {
   const fetchData = async (searchParams = '') => {
     try {
       setLoading(true);
-      const [warehousesRes, usersRes] = await Promise.all([
-        warehouseService.getAll(searchParams),
-        userService.getAll()
-      ]);
+      const warehousesRes = await warehouseService.getAll(searchParams);
       const mappedData = warehousesRes.map(item => ({ ...item, key: item._id }));
       setData(mappedData);
-      setUsers(usersRes?.filter(u => u.role?.name === 'Warehouse Manager' || u.role?.name === 'Admin') || usersRes || []);
     } catch (error) {
-      // Ignore initial render errors if backend has just restarted
+      console.error('Lỗi tải danh sách kho:', error);
     } finally {
       setLoading(false);
+    }
+
+    try {
+      const usersRes = await userService.getAll();
+      setUsers(usersRes || []);
+    } catch (error) {
+      console.error('Lỗi tải danh sách user:', error);
     }
   };
 
@@ -69,7 +72,7 @@ export default function AdminWarehouse() {
       dataIndex: 'capacity', 
       key: 'capacity',
       align: 'right',
-      render: (val) => <span className="font-bold text-indigo-700">{val ? `${val.toLocaleString('vi-VN')} m³` : 'N/A'}</span>
+      render: (val) => <span className="font-bold text-indigo-700">{val ? `${val.toLocaleString('vi-VN')} m2` : 'N/A'}</span>
     },
     {
       title: 'Thao tác',

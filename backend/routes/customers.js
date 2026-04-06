@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 let customerModel = require('../schemas/customers')
 let { logAction } = require('../utils/auditlogHandler')
+let { checkLogin } = require('../utils/authHandler')
 
 router.get('/', async function (req, res, next) {
     let queries = req.query;
@@ -35,7 +36,7 @@ router.get('/:id', async function (req, res, next) {
         })
     }
 });
-router.post('/', async function (req, res) {
+router.post('/', checkLogin, async function (req, res) {
     try {
         let newCustomer = new customerModel({
             name: req.body.name,
@@ -53,7 +54,7 @@ router.post('/', async function (req, res) {
         })
     }
 })
-router.put('/:id', async function (req, res) {
+router.put('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let oldData = await customerModel.findOne({
@@ -78,7 +79,7 @@ router.put('/:id', async function (req, res) {
         })
     }
 })
-router.delete('/:id', async function (req, res) {
+router.delete('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let result = await customerModel.findOne({

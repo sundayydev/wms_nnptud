@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Input, Modal, Form, Select } from 'antd';
 import { EditOutlined, DeleteOutlined, TagsOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons';
-import { categoryService } from '../../services/categoryService';
-import CustomEmpty from '../../components/CustomEmpty';
+import { categoryService } from '../../../services/categoryService';
+import CustomEmpty from '../../../components/CustomEmpty';
 
-export default function ManageCategories() {
+export default function AdminCategory() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,7 +66,6 @@ export default function ManageCategories() {
       .then(async (values) => {
         setIsSubmitting(true);
         try {
-          // Chuẩn hoá null
           if (!values.parentCategory) values.parentCategory = null;
 
           if (editingRecord) {

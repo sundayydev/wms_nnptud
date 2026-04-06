@@ -40,8 +40,8 @@ module.exports = {
     }).withMessage("password dai it nhat 8 ki tu, trong do co it nhat 1 ki tu hoa, 1 ki tu thuong, 1 ki tu so va 1 ki tu dac biet")
   ],
   ModifyUserValidator: [
-    body("email").isEmpty().withMessage("email khong duoc thya doi"),
-    body("username").isEmpty().withMessage("username khong duoc thay doi"),
+    body("email").optional().isEmail().withMessage("email sai dinh dang"),
+    body("username").optional().isAlphanumeric().withMessage("username khong duoc chua ki tu dac biet"),
     body("password").optional().isStrongPassword({
       minLength: 8,
       minLowercase: 1,
@@ -49,7 +49,7 @@ module.exports = {
       minSymbols: 1,
       minUppercase: 1
     }).withMessage("password dai it nhat 8 ki tu, trong do co it nhat 1 ki tu hoa, 1 ki tu thuong, 1 ki tu so va 1 ki tu dac biet"),
-    body("role").isEmpty().withMessage("role khong duoc thay doi"),
+    body("role").optional().isMongoId().withMessage("role phai la 1 id"),
     body("avatarUrl").optional().isArray().withMessage("image khong hop le"),
     body("avatarUrl.*").optional().isURL().withMessage("Url khong hop le")
   ],

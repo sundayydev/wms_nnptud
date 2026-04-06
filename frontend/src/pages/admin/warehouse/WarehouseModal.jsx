@@ -67,7 +67,7 @@ export default function WarehouseModal({ open, users = [], onCancel, editingReco
             <Input size="large" placeholder="Ví dụ: Kho Tổng HCM" className="rounded-lg bg-gray-50/50 hover:bg-white focus:bg-white" />
           </Form.Item>
           
-          <Form.Item name="capacity" label={<span className="font-semibold text-gray-700 text-[13px] uppercase tracking-wide">Sức Chứa (m³)</span>}>
+          <Form.Item name="capacity" label={<span className="font-semibold text-gray-700 text-[13px] uppercase tracking-wide">Sức Chứa (m2)</span>}>
             <InputNumber size="large" className="w-full rounded-lg bg-gray-50/50 hover:bg-white focus:bg-white" formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} min={0} placeholder="1000" />
           </Form.Item>
         </div>

@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();
 let warehouseModel = require('../models/Warehouse');
 let { logAction } = require('../utils/auditlogHandler');
-require('../models/User'); // Required for populate('manager')
+let { checkLogin } = require('../utils/authHandler');
+require('../models/User');
 
 /* GET all warehouses */
 router.get('/', async function (req, res, next) {
@@ -41,7 +42,7 @@ router.get('/:id', async function (req, res, next) {
 });
 
 /* POST create warehouse */
-router.post('/', async function (req, res) {
+router.post('/', checkLogin, async function (req, res) {
     try {
         let newWarehouse = new warehouseModel({
             name: req.body.name,
@@ -58,7 +59,7 @@ router.post('/', async function (req, res) {
 });
 
 /* PUT update warehouse */
-router.put('/:id', async function (req, res) {
+router.put('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let oldData = await warehouseModel.findById(id);
@@ -75,7 +76,7 @@ router.put('/:id', async function (req, res) {
 });
 
 /* DELETE warehouse */
-router.delete('/:id', async function (req, res) {
+router.delete('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let result = await warehouseModel.findByIdAndDelete(id);
