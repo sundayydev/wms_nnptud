@@ -61,7 +61,7 @@ router.delete('/:id', async function (req, res) {
         if (result) {
             result.isDeleted = true
             await result.save();
-            res.send(result)
+            res.send({ message: "Xoa thanh cong", data: result })
         } else {
             res.status(404).send({
                 message: "ID NOT FOUND"

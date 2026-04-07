@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+let mongoose = require('mongoose');
 let inventoryModel = require('../models/Inventory');
 let userModel = require('../schemas/users');
 let roleModel = require('../schemas/roles');
@@ -83,9 +84,16 @@ router.get('/:id', async function (req, res, next) {
 
 /* POST create inventory */
 router.post('/', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
-        let exists = await inventoryModel.findOne({ product: req.body.product, warehouse: req.body.warehouse });
+        let exists = await inventoryModel.findOne({
+            product: req.body.product,
+            warehouse: req.body.warehouse
+        }).session(session);
+
         if (exists) {
+            await session.abortTransaction();
             return res.status(400).send({ message: "Sản phẩm này đã có dữ liệu tồn kho trong kho được chọn. Vui lòng sử dụng tính năng cập nhật." });
         }
 
@@ -95,21 +103,32 @@ router.post('/', async function (req, res) {
             quantity: req.body.quantity,
             lastUpdatedBy: req.body.lastUpdatedBy || null
         });
-        await newInventory.save();
+        await newInventory.save({ session });
+        await session.commitTransaction();
         res.send(newInventory);
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
 /* PUT update inventory - ghi audit log + gửi mail nếu tồn kho thấp */
 router.put('/:id', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
 
         // Lấy số lượng cũ trước khi update
-        let oldData = await inventoryModel.findById(id).populate('product').populate('warehouse');
+        let oldData = await inventoryModel.findById(id)
+            .populate('product')
+            .populate('warehouse')
+            .session(session);
+
         if (!oldData) {
+            await session.abortTransaction();
             return res.status(404).send({ message: "ID NOT FOUND" });
         }
         let quantityBefore = oldData.quantity;
@@ -117,7 +136,7 @@ router.put('/:id', async function (req, res) {
         let result = await inventoryModel.findByIdAndUpdate(id, {
             quantity: req.body.quantity,
             lastUpdatedBy: req.body.lastUpdatedBy || null
-        }, { returnDocument: 'after' }).populate('product').populate('warehouse');
+        }, { returnDocument: 'after', session }).populate('product').populate('warehouse');
 
         // Ghi audit log — ai cập nhật, số lượng cũ → mới
         logAction(
@@ -134,7 +153,9 @@ router.put('/:id', async function (req, res) {
             req.ip
         );
 
-        // Kiểm tra ngưỡng tồn kho → gửi mail cảnh báo
+        await session.commitTransaction();
+
+        // Kiểm tra ngưỡng tồn kho → gửi mail cảnh báo (ngoài transaction)
         if (result.quantity < LOW_STOCK_THRESHOLD) {
             console.log(`[LOW STOCK] quantity=${result.quantity} < threshold=${LOW_STOCK_THRESHOLD} → tìm admin...`);
             let adminRole = await roleModel.findOne({ name: 'admin', isDeleted: false });
@@ -155,24 +176,33 @@ router.put('/:id', async function (req, res) {
 
         res.send(result);
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
 /* DELETE inventory */
 router.delete('/:id', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
-        let result = await inventoryModel.findByIdAndDelete(id);
+        let result = await inventoryModel.findByIdAndDelete(id, { session });
         if (result) {
+            await session.commitTransaction();
             res.send({ message: "Deleted successfully", data: result });
         } else {
+            await session.abortTransaction();
             res.status(404).send({ message: "ID NOT FOUND" });
         }
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
 module.exports = router;
-

@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+let mongoose = require('mongoose');
 let customerModel = require('../schemas/customers')
 let { logAction } = require('../utils/auditlogHandler')
 let { checkLogin } = require('../utils/authHandler')
@@ -16,6 +17,7 @@ router.get('/', async function (req, res, next) {
     let data = await customerModel.find(filter);
     res.send(data);
 });
+
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -36,7 +38,10 @@ router.get('/:id', async function (req, res, next) {
         })
     }
 });
+
 router.post('/', checkLogin, async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let newCustomer = new customerModel({
             name: req.body.name,
@@ -44,63 +49,80 @@ router.post('/', checkLogin, async function (req, res) {
             phone: req.body.phone,
             address: req.body.address,
             customerType: req.body.customerType
-        })
-        await newCustomer.save()
-        logAction(req.user ? req.user._id : null, 'CREATE', 'customer', newCustomer._id, newCustomer, req.ip)
-        res.send(newCustomer)
+        });
+        await newCustomer.save({ session });
+        logAction(req.user ? req.user._id : null, 'CREATE', 'customer', newCustomer._id, newCustomer, req.ip);
+        await session.commitTransaction();
+        res.send(newCustomer);
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({
             message: error.message
-        })
+        });
+    } finally {
+        session.endSession();
     }
-})
+});
+
 router.put('/:id', checkLogin, async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
         let oldData = await customerModel.findOne({
             isDeleted: false,
             _id: id
-        });
+        }).session(session);
         if (!oldData) {
+            await session.abortTransaction();
             res.status(404).send({
                 message: "ID NOT FOUND"
-            })
-            return
+            });
+            return;
         }
-        let result = await customerModel.findByIdAndUpdate(
-            id, req.body, {
-            new: true
-        })
-        logAction(req.user ? req.user._id : null, 'UPDATE', 'customer', id, { old: oldData, new: result }, req.ip)
-        res.send(result)
+        let result = await customerModel.findByIdAndUpdate(id, req.body, { new: true, session });
+        logAction(req.user ? req.user._id : null, 'UPDATE', 'customer', id, { old: oldData, new: result }, req.ip);
+        await session.commitTransaction();
+        res.send(result);
     } catch (error) {
+        await session.abortTransaction();
         res.status(404).send({
             message: error.message
-        })
+        });
+    } finally {
+        session.endSession();
     }
-})
+});
+
 router.delete('/:id', checkLogin, async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
         let result = await customerModel.findOne({
             isDeleted: false,
             _id: id
-        });
+        }).session(session);
         if (result) {
-            result.isDeleted = true
-            await result.save();
-            logAction(req.user ? req.user._id : null, 'DELETE', 'customer', id, result, req.ip)
-            res.send(result)
+            result.isDeleted = true;
+            await result.save({ session });
+            logAction(req.user ? req.user._id : null, 'DELETE', 'customer', id, result, req.ip);
+            await session.commitTransaction();
+            res.send({ message: "Xoa thanh cong", data: result });
         } else {
+            await session.abortTransaction();
             res.status(404).send({
                 message: "ID NOT FOUND"
-            })
+            });
         }
     } catch (error) {
+        await session.abortTransaction();
         res.status(404).send({
             message: error.message
-        })
+        });
+    } finally {
+        session.endSession();
     }
-})
+});
 
 module.exports = router;
