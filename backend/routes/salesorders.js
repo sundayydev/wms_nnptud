@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
-let salesorderModel = require('../schemas/salesorders');
+let salesorderModel = require('../models/SalesOrder');
 
 router.get('/', async function (req, res, next) {
     let data = await salesorderModel.find({
@@ -64,7 +64,7 @@ router.post('/', async function (req, res) {
             }
         }
 
-        let shipmentModel = require('../schemas/shipments');
+        let shipmentModel = require('../models/Shipment');
         let newShipment = new shipmentModel({
             order: newItem._id, 
             status: 'Preparing',

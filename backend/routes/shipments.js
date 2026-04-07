@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
-let shipmentModel = require('../schemas/shipments');
+let shipmentModel = require('../models/Shipment');
 
 router.get('/', async function (req, res, next) {
     let data = await shipmentModel.find({

@@ -8,7 +8,7 @@ let { checkLogin } = require('../utils/authHandler')
 let crypto = require('crypto')
 let { sendMail } = require('../utils/mailHandler')
 let mongoose = require('mongoose')
-let roleModel = require('../schemas/roles')
+let roleModel = require('../models/Role')
 
 router.post('/register', RegisterValidator, validatedResult, async function (req, res, next) {
     let session = await mongoose.startSession();

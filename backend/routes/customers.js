@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
-let customerModel = require('../schemas/customers')
+let customerModel = require('../models/Customer')
 let { logAction } = require('../utils/auditlogHandler')
 let { checkLogin } = require('../utils/authHandler')
 

@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-let auditlogModel = require('../schemas/auditlogs')
+let auditlogModel = require('../models/AuditLog')
 
 router.get('/', async function (req, res, next) {
     let queries = req.query;

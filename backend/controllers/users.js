@@ -1,4 +1,4 @@
-let userModel = require('../schemas/users')
+let userModel = require('../models/User')
 module.exports = {
     CreateAnUser: async function (username, password, email, role, session) {
         let newUser = new userModel({

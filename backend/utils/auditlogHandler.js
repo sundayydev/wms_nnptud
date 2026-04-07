@@ -1,4 +1,4 @@
-let auditlogModel = require('../schemas/auditlogs')
+let auditlogModel = require('../models/AuditLog')
 
 module.exports = {
     logAction: async function (user, action, collectionName, documentId, changes, ipAddress) {
