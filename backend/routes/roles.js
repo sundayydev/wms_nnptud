@@ -1,7 +1,7 @@
 let express = require('express')
 let router = express.Router()
 let mongoose = require('mongoose')
-let roleModel = require('../schemas/roles')
+let roleModel = require('../models/Role')
 let { checkLogin, checkAdmin } = require('../utils/authHandler')
 
 // GET all roles

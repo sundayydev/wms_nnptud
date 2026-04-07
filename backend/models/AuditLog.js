@@ -6,7 +6,8 @@ const auditLogSchema = new mongoose.Schema({
   collectionName: { type: String, required: true }, // Tên model bị thay đổi (VD: Product, Inventory)
   documentId: { type: mongoose.Schema.Types.ObjectId }, // ID của record bị tác động
   changes: { type: mongoose.Schema.Types.Mixed }, // Lưu trữ dữ liệu cũ/mới dưới dạng JSON linh hoạt
-  ipAddress: { type: String }
+  ipAddress: { type: String },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true }); // Tự động có createdAt để biết thời gian thao tác
 
 module.exports = mongoose.model('AuditLog', auditLogSchema);

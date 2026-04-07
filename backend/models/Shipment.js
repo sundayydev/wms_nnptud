@@ -6,7 +6,8 @@ const shipmentSchema = new mongoose.Schema({
   carrier: { type: String }, // Đơn vị vận chuyển (VD: VNPost, GHN)
   status: { type: String, enum: ['Preparing', 'In Transit', 'Delivered', 'Failed'], default: 'Preparing' },
   shippedDate: { type: Date },
-  estimatedDelivery: { type: Date }
+  estimatedDelivery: { type: Date },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Shipment', shipmentSchema);
