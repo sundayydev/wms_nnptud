@@ -5,8 +5,8 @@ let inventoryModel = require('../models/Inventory')
 let mongoose = require('mongoose')
 let { logAction } = require('../utils/auditlogHandler')
 let { checkLogin } = require('../utils/authHandler')
+let { deleteFromCloudinary } = require('../utils/cloudinaryHandler')
 
-/* GET all products */
 router.get('/', async function (req, res, next) {
     let queries = req.query;
     let nameQ = queries.name ? queries.name : '';
@@ -24,7 +24,6 @@ router.get('/', async function (req, res, next) {
     res.send(data);
 });
 
-/* GET product by ID */
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -39,7 +38,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create product */
 router.post('/', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -48,6 +46,8 @@ router.post('/', checkLogin, async function (req, res) {
             sku: req.body.sku,
             name: req.body.name,
             description: req.body.description,
+            image: req.body.image,
+            imagePublicId: req.body.imagePublicId,
             category: req.body.category,
             price: req.body.price,
             unit: req.body.unit
@@ -71,33 +71,56 @@ router.post('/', checkLogin, async function (req, res) {
     }
 });
 
-/* PUT update product */
 router.put('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
         let oldData = await productModel.findById(id);
+        if (!oldData) {
+            return res.status(404).send({ message: "ID NOT FOUND" });
+        }
+
+        let hasImageChanged = Object.prototype.hasOwnProperty.call(req.body, 'imagePublicId')
+            && oldData.imagePublicId
+            && oldData.imagePublicId !== req.body.imagePublicId;
+
+        if (hasImageChanged) {
+            try {
+                await deleteFromCloudinary(oldData.imagePublicId);
+            } catch (cloudinaryError) {
+                console.error('Cloudinary cleanup failed:', cloudinaryError.message);
+            }
+        }
+
         let result = await productModel.findByIdAndUpdate(id, req.body, { new: true });
         if (result) {
             logAction(req.user ? req.user._id : null, 'UPDATE', 'product', id, { old: oldData, new: result }, req.ip)
             res.send(result);
-        } else {
-            res.status(404).send({ message: "ID NOT FOUND" });
         }
     } catch (error) {
         res.status(400).send({ message: error.message });
     }
 });
 
-/* DELETE product */
 router.delete('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
+        let oldData = await productModel.findById(id);
+        if (!oldData) {
+            return res.status(404).send({ message: "ID NOT FOUND" });
+        }
+
+        if (oldData.imagePublicId) {
+            try {
+                await deleteFromCloudinary(oldData.imagePublicId);
+            } catch (cloudinaryError) {
+                console.error('Cloudinary cleanup failed:', cloudinaryError.message);
+            }
+        }
+
         let result = await productModel.findByIdAndDelete(id);
         if (result) {
             logAction(req.user ? req.user._id : null, 'DELETE', 'product', id, result, req.ip)
             res.send({ message: "Deleted successfully", data: result });
-        } else {
-            res.status(404).send({ message: "ID NOT FOUND" });
         }
     } catch (error) {
         res.status(400).send({ message: error.message });

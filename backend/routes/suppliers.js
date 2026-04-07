@@ -4,7 +4,6 @@ let mongoose = require('mongoose');
 let supplierModel = require('../models/Supplier')
 let { logAction } = require('../utils/auditlogHandler')
 
-/* GET all suppliers */
 router.get('/', async function (req, res, next) {
     try {
         let queries = req.query;
@@ -19,7 +18,6 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-/* GET supplier by ID */
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -34,7 +32,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create supplier */
 router.post('/', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -58,7 +55,6 @@ router.post('/', async function (req, res) {
     }
 });
 
-/* PUT update supplier */
 router.put('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -82,7 +78,6 @@ router.put('/:id', async function (req, res) {
     }
 });
 
-/* DELETE supplier */
 router.delete('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();

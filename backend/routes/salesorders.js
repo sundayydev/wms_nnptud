@@ -5,6 +5,7 @@ let salesorderModel = require('../models/SalesOrder');
 let userModel = require('../models/User');
 let notificationModel = require('../models/Notification');
 let { EmitEvent } = require('../utils/socket');
+let inventoryModel = require('../models/Inventory');
 
 router.get('/', async function (req, res, next) {
     let data = await salesorderModel.find({
@@ -49,8 +50,7 @@ router.post('/', async function (req, res) {
         });
         await newItem.save({ session });
 
-        // Tự động trừ tồn kho (Inventory)
-        let inventoryModel = require('../models/Inventory');
+        
         if (req.body.items && req.body.items.length > 0) {
             for (let item of req.body.items) {
                 let currentInv = await inventoryModel.findOne({

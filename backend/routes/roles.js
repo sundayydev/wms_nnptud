@@ -4,13 +4,11 @@ let mongoose = require('mongoose')
 let roleModel = require('../models/Role')
 let { checkLogin, checkAdmin } = require('../utils/authHandler')
 
-// GET all roles
 router.get('/', checkLogin, async function (req, res, next) {
     let data = await roleModel.find({ isDeleted: false })
     res.send(data)
 })
 
-// POST seed - tao 2 role admin va user
 router.post('/seed', async function (req, res, next) {
     let session = await mongoose.startSession()
     session.startTransaction()
