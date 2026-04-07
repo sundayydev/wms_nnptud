@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+let mongoose = require('mongoose');
 let purchaseOrderModel = require('../models/PurchaseOrder');
 
 /* GET all purchase orders */
@@ -39,6 +40,8 @@ router.get('/:id', async function (req, res, next) {
 
 /* POST create purchase order */
 router.post('/', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let newPurchaseOrder = new purchaseOrderModel({
             poNumber: req.body.poNumber,
@@ -50,45 +53,63 @@ router.post('/', async function (req, res) {
             createdBy: req.body.createdBy
         });
 
-        await newPurchaseOrder.save();
+        await newPurchaseOrder.save({ session });
 
-        let result = await purchaseOrderModel.findById(newPurchaseOrder._id);
+        let result = await purchaseOrderModel.findById(newPurchaseOrder._id).session(session);
 
+        await session.commitTransaction();
         res.send(result);
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
 /* PUT update purchase order */
 router.put('/:id', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
-        let result = await purchaseOrderModel.findByIdAndUpdate(id, req.body, { new: true });
+        let result = await purchaseOrderModel.findByIdAndUpdate(id, req.body, { new: true, session });
 
         if (result) {
+            await session.commitTransaction();
             res.send(result);
         } else {
+            await session.abortTransaction();
             res.status(404).send({ message: 'ID NOT FOUND' });
         }
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
 /* DELETE purchase order */
 router.delete('/:id', async function (req, res) {
+    let session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let id = req.params.id;
-        let result = await purchaseOrderModel.findByIdAndDelete(id);
+        let result = await purchaseOrderModel.findByIdAndDelete(id, { session });
 
         if (result) {
+            await session.commitTransaction();
             res.send({ message: 'Deleted successfully', data: result });
         } else {
+            await session.abortTransaction();
             res.status(404).send({ message: 'ID NOT FOUND' });
         }
     } catch (error) {
+        await session.abortTransaction();
         res.status(400).send({ message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
