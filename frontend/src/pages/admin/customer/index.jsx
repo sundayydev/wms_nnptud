@@ -132,8 +132,8 @@ export default function AdminCustomer() {
                 icon={<EditOutlined />} 
                 onClick={() => handleOpenModal(record)} />
           </Tooltip>
-          <Tooltip title="Xoá vĩnh viễn">
-            <Popconfirm title="Bạn có chắc chắn muốn xoá khách hàng này?" description="Sẽ không thể khôi phục lại dữ liệu." okText="Xác nhận" cancelText="Hủy" okButtonProps={{ danger: true }} onConfirm={() => handleDelete(record._id)}>
+          <Tooltip title="Xoá mềm">
+            <Popconfirm title="Bạn có chắc chắn muốn xoá khách hàng này?" description="Khách hàng sẽ được đánh dấu đã xoá và có thể khôi phục theo logic hệ thống." okText="Xác nhận" cancelText="Hủy" okButtonProps={{ danger: true }} onConfirm={() => handleDelete(record._id)}>
               <Button type="text" danger className="hover:bg-red-50 transition-colors" icon={<DeleteOutlined />} />
             </Popconfirm>
           </Tooltip>
