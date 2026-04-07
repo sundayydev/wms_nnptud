@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, Space, Button, Typography, Popconfirm, Tooltip, message, Card, Tag, Modal } from 'antd';
-import { EditOutlined, DeleteOutlined, ExportOutlined, PrinterOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExportOutlined, PrinterOutlined, CarOutlined } from '@ant-design/icons';
 import API_URL from '../../../services/api';
 import SalesOrderFilter from './SalesOrderFilter';
 import SalesOrderModal from './SalesOrderModal';
@@ -8,6 +8,7 @@ import { salesOrderService } from '../../../services/salesOrderService';
 import { customerService } from '../../../services/customerService';
 import { warehouseService } from '../../../services/warehouseService';
 import { productService } from '../../../services/productService';
+import { inventoryService } from '../../../services/inventoryService';
 import CustomEmpty from '../../../components/CustomEmpty';
 
 export default function AdminSalesOrder() {
@@ -20,17 +21,20 @@ export default function AdminSalesOrder() {
   const [customers, setCustomers] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [products, setProducts] = useState([]);
+  const [inventories, setInventories] = useState([]);
 
   const fetchDependencies = async () => {
     try {
-      const [cusRes, whRes, prodRes] = await Promise.all([
+      const [cusRes, whRes, prodRes, invRes] = await Promise.all([
         customerService.getAll(),
         warehouseService.getAll(),
-        productService.getAll()
+        productService.getAll(),
+        inventoryService.getAll()
       ]);
       setCustomers(cusRes || []);
       setWarehouses(whRes || []);
       setProducts(prodRes || []);
+      setInventories(invRes || []);
     } catch (e) {
       console.log("Error loading dependencies", e);
     }
@@ -154,6 +158,16 @@ export default function AdminSalesOrder() {
               <Button type="text" danger className="hover:bg-red-50 transition-colors" icon={<DeleteOutlined />} />
             </Popconfirm>
           </Tooltip>
+          <Tooltip title="Xem Vận Đơn">
+            <Button
+              type="text"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
+              icon={<CarOutlined />}
+              onClick={() => {
+                window.location.href = `/admin/shipments`;
+              }}
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -198,6 +212,7 @@ export default function AdminSalesOrder() {
         customers={customers}
         warehouses={warehouses}
         products={products}
+        inventories={inventories}
         onCancel={() => setModalOpen(false)} 
         editingRecord={editingRecord} 
         refreshData={fetchData} 

@@ -3,10 +3,22 @@ import { MinusCircleOutlined, PlusOutlined, EditOutlined, PlusCircleOutlined } f
 import { useEffect, useState } from 'react';
 import { salesOrderService } from '../../../services/salesOrderService';
 
-export default function SalesOrderModal({ open, customers = [], warehouses = [], products = [], onCancel, editingRecord, refreshData }) {
+export default function SalesOrderModal({ open, customers = [], warehouses = [], products = [], inventories = [], onCancel, editingRecord, refreshData }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+  
+  // Lắng nghe warehouse đang được chọn
+  const selectedWarehouse = Form.useWatch('warehouse', form);
+
+  // Helper để lấy tồn kho
+  const getAvailableStock = (productId) => {
+    if (!selectedWarehouse) return 0;
+    const inv = inventories.find(
+      (i) => i.product?._id === productId && i.warehouse?._id === selectedWarehouse
+    );
+    return inv ? inv.quantity : 0;
+  };
   
   useEffect(() => {
     if (open) {
@@ -120,11 +132,40 @@ export default function SalesOrderModal({ open, customers = [], warehouses = [],
                   <Space key={key} className="flex mb-2" align="baseline">
                     <Form.Item {...restField} name={[name, 'product']} rules={[{ required: true, message: 'Chọn SP' }]} className="w-64">
                       <Select placeholder="Chọn sản phẩm..." className="rounded-lg">
-                        {products.map(p => <Select.Option key={p._id} value={p._id}>{p.name} - {p.sku}</Select.Option>)}
+                        {products.map(p => {
+                          const stock = getAvailableStock(p._id);
+                          const isOutOfStock = stock <= 0;
+                          return (
+                            <Select.Option key={p._id} value={p._id} disabled={isOutOfStock}>
+                              <div className="flex justify-between">
+                                  <span>{p.name} - {p.sku}</span>
+                                  {selectedWarehouse && <span className="text-gray-400 font-medium">Tồn: {stock}</span>}
+                              </div>
+                            </Select.Option>
+                          );
+                        })}
                       </Select>
                     </Form.Item>
+                    
+                    {/* Thêm 1 ô UI hiển thị số lượng Tồn Kho phía sau Select Product */}
+                    <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.items?.[name]?.product !== currentValues.items?.[name]?.product || prevValues.warehouse !== currentValues.warehouse}>
+                      {() => {
+                        const selectedProductId = form.getFieldValue(['items', name, 'product']);
+                        const stock = getAvailableStock(selectedProductId);
+                        return (
+                          <div className="bg-rose-50 text-rose-700 px-3 py-[6px] rounded-lg border border-rose-100 min-w-[70px] text-center whitespace-nowrap font-semibold text-sm">
+                            Tồn: {selectedProductId ? stock : 0}
+                          </div>
+                        );
+                      }}
+                    </Form.Item>
+
                     <Form.Item {...restField} name={[name, 'quantity']} rules={[{ required: true, message: 'Nhập số lượng' }]}>
-                      <InputNumber placeholder="SL" min={1} className="rounded-lg w-24" />
+                      <InputNumber 
+                        placeholder="SL" 
+                        min={1} 
+                        className="rounded-lg w-24" 
+                      />
                     </Form.Item>
                     <Form.Item {...restField} name={[name, 'unitPrice']} rules={[{ required: true, message: 'Nhập xuất giá' }]}>
                       <InputNumber placeholder="Đơn giá" formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} className="rounded-lg w-32" />

@@ -29,6 +29,7 @@ export default function UserLayout() {
     { key: 'inventories',    icon: <DatabaseOutlined />,  label: <Link to="/user/inventories">Tồn Kho</Link> },
     { key: 'purchase-orders',icon: <ImportOutlined />,    label: <Link to="/user/purchase-orders">Nhập Hàng (PO)</Link> },
     { key: 'sales-orders',   icon: <ExportOutlined />,    label: <Link to="/user/sales-orders">Xuất Hàng (SO)</Link> },
+    { key: 'shipments',      icon: <ExportOutlined />,    label: <Link to="/user/shipments">Giao Hàng</Link> },
   ];
 
   const dropdownItems = {

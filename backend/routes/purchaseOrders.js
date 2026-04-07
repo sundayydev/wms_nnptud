@@ -55,6 +55,30 @@ router.post('/', async function (req, res) {
 
         await newPurchaseOrder.save({ session });
 
+        // Tự động cộng tồn kho (Inventory)
+        let inventoryModel = require('../models/Inventory');
+        if (req.body.items && req.body.items.length > 0) {
+            for (let item of req.body.items) {
+                let currentInv = await inventoryModel.findOne({
+                    product: item.product,
+                    warehouse: req.body.warehouse
+                }).session(session);
+
+                if (currentInv) {
+                    currentInv.quantity += item.quantity;
+                    await currentInv.save({ session });
+                } else {
+                    let newInv = new inventoryModel({
+                        product: item.product,
+                        warehouse: req.body.warehouse,
+                        quantity: item.quantity,
+                        lastUpdatedBy: req.body.createdBy
+                    });
+                    await newInv.save({ session });
+                }
+            }
+        }
+
         let result = await purchaseOrderModel.findById(newPurchaseOrder._id).session(session);
 
         await session.commitTransaction();
