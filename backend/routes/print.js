@@ -10,93 +10,71 @@ require('../models/Customer');
 require('../models/Supplier');
 require('../models/User');
 
-
-//  Đọc file template HTML
-
 function readTemplate(filename) {
     let filePath = path.join(__dirname, '../template', filename);
     return fs.readFileSync(filePath, 'utf8');
 }
-
-//  Replace tất cả placeholder {{KEY}}
+// Replace
 function fillTemplate(html, data) {
     return html.replace(/\{\{(\w+)\}\}/g, function (match, key) {
         return data[key] !== undefined ? data[key] : '';
     });
 }
 
-//  Format số tiền VNĐ
 function formatMoney(amount) {
     if (!amount && amount !== 0) return '0';
     return Number(amount).toLocaleString('vi-VN') + ' đ';
 }
 
-// Đọc số thành chữ tiếng Việt
-function numberToWords(num) {
-    if (!num || num === 0) return 'Không đồng';
-    num = Math.round(num);
 
-    const units  = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
-    const tens   = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi',
-                    'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
-
-    function readHundred(n) {
-        let str = '';
-        let h = Math.floor(n / 100);
-        let t = Math.floor((n % 100) / 10);
-        let u = n % 10;
-        if (h > 0) str += units[h] + ' trăm ';
-        if (t === 0 && u > 0 && h > 0) str += 'lẻ ' + units[u];
-        else if (t === 1) str += 'mười ' + (u > 0 ? (u === 5 ? 'lăm' : units[u]) : '');
-        else if (t > 1) str += tens[t] + ' ' + (u === 1 ? 'mốt' : u === 5 ? 'lăm' : u > 0 ? units[u] : '');
-        else str += (u > 0 ? units[u] : '');
-        return str.trim();
-    }
-
-    function readGroup(n, suffix) {
-        if (n === 0) return '';
-        return readHundred(n) + ' ' + suffix + ' ';
-    }
-
-    let ty       = Math.floor(num / 1_000_000_000);
-    let trieu    = Math.floor((num % 1_000_000_000) / 1_000_000);
-    let nghin    = Math.floor((num % 1_000_000) / 1_000);
-    let tram     = num % 1_000;
-
-    let result = '';
-    if (ty    > 0) result += readGroup(ty,    'tỷ');
-    if (trieu > 0) result += readGroup(trieu, 'triệu');
-    if (nghin > 0) result += readGroup(nghin, 'nghìn');
-    if (tram  > 0) result += readHundred(tram);
-
-    result = result.trim();
-    result = result.charAt(0).toUpperCase() + result.slice(1);
-    return result + ' đồng chẵn';
-}
-
-//  Lấy ngày tháng năm
+//  lay ngay thang năm
 function getDateParts(dateStr) {
-    let d = dateStr ? new Date(dateStr) : new Date();
+    let d;
+    if (dateStr) {
+        d = new Date(dateStr);
+    } else {
+        d = new Date();
+    }
+
+    let day = d.getDate();
+    if (day < 10) {
+        day = '0' + day;
+    }
+
+    let month = d.getMonth() + 1; 
+    if (month < 10) {
+        month = '0' + month;
+    }
+
+    let hour = d.getHours();
+    if (hour < 10) {
+        hour = '0' + hour;
+    }
+
+    let minute = d.getMinutes();
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+
     return {
-        Day:    String(d.getDate()).padStart(2, '0'),
-        Month:  String(d.getMonth() + 1).padStart(2, '0'),
-        Year:   String(d.getFullYear()),
-        Hour:   String(d.getHours()).padStart(2, '0'),
-        Minute: String(d.getMinutes()).padStart(2, '0'),
+        Day: String(day),
+        Month: String(month),
+        Year: String(d.getFullYear()),
+        Hour: String(hour),
+        Minute: String(minute),
     };
 }
 
 // Thông tin công ty mặc định
 const COMPANY_INFO = {
-    CompanyName:    process.env.COMPANY_NAME    || 'CÔNG TY TNHH WMS DEMO',
-    TaxCode:        process.env.COMPANY_TAX     || '0123456789',
-    CompanyAddress: process.env.COMPANY_ADDRESS || '123 Đường ABC, Quận 1, TP.HCM',
-    PhoneNumber:    process.env.COMPANY_PHONE   || '028 1234 5678',
-    Email:          process.env.COMPANY_EMAIL   || 'info@wmsdemo.com',
-    LogoUrl:        process.env.COMPANY_LOGO    || 'http://localhost:3000/images/logo.png',
+    CompanyName:process.env.COMPANY_NAME,
+    TaxCode:process.env.COMPANY_TAX,
+    CompanyAddress:process.env.COMPANY_ADDRESS,
+    PhoneNumber:process.env.COMPANY_PHONE,
+    Email:process.env.COMPANY_EMAIL,
+    LogoUrl:process.env.COMPANY_LOGO,
 };
 
-// GET /api/v1/print/purchase-orders/:id
 router.get('/purchase-orders/:id', async function (req, res) {
     try {
         let order = await PurchaseOrder.findById(req.params.id)
@@ -111,17 +89,17 @@ router.get('/purchase-orders/:id', async function (req, res) {
 
         let productRows = '';
         let totalQuantity = 0;
-        order.items.forEach(function (item, index) {
-            let subtotal = (item.quantity || 0) * (item.unitPrice || 0);
-            totalQuantity += item.quantity || 0;
+        order.items.forEach((item, index) => {
+            let { quantity = 0, unitPrice = 0, product } = item;
+            totalQuantity += quantity;
             productRows += `
                 <tr>
                     <td class="text-center">${index + 1}</td>
-                    <td>${item.product ? item.product.name : ''}</td>
-                    <td class="text-center">${item.product ? (item.product.unit || 'Cái') : ''}</td>
-                    <td class="text-center">${item.quantity || 0}</td>
-                    <td class="text-right">${formatMoney(item.unitPrice)}</td>
-                    <td class="text-right">${formatMoney(subtotal)}</td>
+                    <td>${product?.name || ''}</td>
+                    <td class="text-center">${product?.unit || 'Cái'}</td>
+                    <td class="text-center">${quantity}</td>
+                    <td class="text-right">${formatMoney(unitPrice)}</td>
+                    <td class="text-right">${formatMoney(quantity * unitPrice)}</td>
                 </tr>`;
         });
 
@@ -129,16 +107,16 @@ router.get('/purchase-orders/:id', async function (req, res) {
             ...COMPANY_INFO,
             ...date,
             ReceiptNumber:   order.poNumber || '',
-            WarehouseName:   order.warehouse ? order.warehouse.name     : '',
-            WarehouseLocation: order.warehouse ? order.warehouse.location : '',
-            UserName:        order.createdBy ? (order.createdBy.fullName || order.createdBy.username) : '',
-            SupplierName:    order.supplier  ? order.supplier.name     : '',
-            SupplierAddress: order.supplier  ? order.supplier.address  : '',
+            WarehouseName:   order.warehouse?.name || '',
+            WarehouseLocation: order.warehouse?.location || '',
+            UserName:        order.createdBy?.fullName || order.createdBy?.username || '',
+            SupplierName:    order.supplier?.name || '',
+            SupplierAddress: order.supplier?.address || '',
             Notes:           order.status || 'Pending',
             ProductRows:     productRows,
             TotalQuantity:   totalQuantity,
             TotalAmount:     formatMoney(order.totalAmount),
-            AmountInWords:   numberToWords(order.totalAmount),
+            AmountInWords:   '',
         };
 
         let html = fillTemplate(readTemplate('import_receipt_template.html'), data);
@@ -149,9 +127,6 @@ router.get('/purchase-orders/:id', async function (req, res) {
         res.status(500).send({ message: error.message });
     }
 });
-
-
-// GET /api/v1/print/sales-orders/:id
 
 router.get('/sales-orders/:id', async function (req, res) {
     try {
@@ -167,17 +142,17 @@ router.get('/sales-orders/:id', async function (req, res) {
 
         let productRows = '';
         let totalQuantity = 0;
-        order.items.forEach(function (item, index) {
-            let subtotal = (item.quantity || 0) * (item.unitPrice || 0);
-            totalQuantity += item.quantity || 0;
+        order.items.forEach((item, index) => {
+            let { quantity = 0, unitPrice = 0, product } = item;
+            totalQuantity += quantity;
             productRows += `
                 <tr>
                     <td class="text-center">${index + 1}</td>
-                    <td>${item.product ? item.product.name : ''}</td>
-                    <td class="text-center">${item.product ? (item.product.unit || 'Cái') : ''}</td>
-                    <td class="text-center">${item.quantity || 0}</td>
-                    <td class="text-right">${formatMoney(item.unitPrice)}</td>
-                    <td class="text-right">${formatMoney(subtotal)}</td>
+                    <td>${product?.name || ''}</td>
+                    <td class="text-center">${product?.unit || 'Cái'}</td>
+                    <td class="text-center">${quantity}</td>
+                    <td class="text-right">${formatMoney(unitPrice)}</td>
+                    <td class="text-right">${formatMoney(quantity * unitPrice)}</td>
                 </tr>`;
         });
 
@@ -185,16 +160,16 @@ router.get('/sales-orders/:id', async function (req, res) {
             ...COMPANY_INFO,
             ...date,
             ReceiptNumber:   order.soNumber || '',
-            WarehouseName:   order.warehouse ? order.warehouse.name     : '',
-            WarehouseLocation: order.warehouse ? order.warehouse.location : '',
-            UserName:        order.createdBy ? (order.createdBy.fullName || order.createdBy.username) : '',
-            CustomerName:    order.customer  ? order.customer.name     : '',
-            CustomerAddress: order.customer  ? order.customer.address  : '',
+            WarehouseName:   order.warehouse?.name || '',
+            WarehouseLocation: order.warehouse?.location || '',
+            UserName:        order.createdBy?.fullName || order.createdBy?.username || '',
+            CustomerName:    order.customer?.name || '',
+            CustomerAddress: order.customer?.address || '',
             Reason:          order.status || 'Pending',
             ProductRows:     productRows,
             TotalQuantity:   totalQuantity,
             TotalAmount:     formatMoney(order.totalAmount),
-            AmountInWords:   numberToWords(order.totalAmount),
+            AmountInWords:   '',
         };
 
         let html = fillTemplate(readTemplate('export_receipt_template.html'), data);
@@ -205,9 +180,6 @@ router.get('/sales-orders/:id', async function (req, res) {
         res.status(500).send({ message: error.message });
     }
 });
-
-
-// GET /api/v1/print/inventories?warehouse=ID
 
 router.get('/inventories', async function (req, res) {
     try {

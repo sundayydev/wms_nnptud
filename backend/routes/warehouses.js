@@ -6,7 +6,6 @@ let { logAction } = require('../utils/auditlogHandler');
 let { checkLogin } = require('../utils/authHandler');
 require('../models/User');
 
-/* GET all warehouses */
 router.get('/', async function (req, res, next) {
     try {
         let queries = req.query;
@@ -24,7 +23,6 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-/* GET warehouse by ID */
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -42,7 +40,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create warehouse */
 router.post('/', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -65,7 +62,6 @@ router.post('/', checkLogin, async function (req, res) {
     }
 });
 
-/* PUT update warehouse */
 router.put('/:id', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -89,7 +85,6 @@ router.put('/:id', checkLogin, async function (req, res) {
     }
 });
 
-/* DELETE warehouse */
 router.delete('/:id', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();

@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
 let salesorderModel = require('../models/SalesOrder');
+let inventoryModel = require('../models/Inventory');
 
 router.get('/', async function (req, res, next) {
     let data = await salesorderModel.find({
@@ -46,8 +47,7 @@ router.post('/', async function (req, res) {
         });
         await newItem.save({ session });
 
-        // Tự động trừ tồn kho (Inventory)
-        let inventoryModel = require('../models/Inventory');
+        
         if (req.body.items && req.body.items.length > 0) {
             for (let item of req.body.items) {
                 let currentInv = await inventoryModel.findOne({
