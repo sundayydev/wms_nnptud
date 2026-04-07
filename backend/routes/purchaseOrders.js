@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
 let purchaseOrderModel = require('../models/PurchaseOrder');
+let inventoryModel = require('../models/Inventory');
 
-// Lấy tất cả
 router.get('/', async function (req, res, next) {
     try {
         let queries = req.query;
@@ -22,7 +22,6 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-// Lấy theo id
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -38,7 +37,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-// tạo 1 đơn hàng mới
 router.post('/', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -54,9 +52,6 @@ router.post('/', async function (req, res) {
         });
 
         await newPurchaseOrder.save({ session });
-
-        // Tự động cộng tồn kho (Inventory)
-        let inventoryModel = require('../models/Inventory');
         if (req.body.items && req.body.items.length > 0) {
             for (let item of req.body.items) {
                 let currentInv = await inventoryModel.findOne({
@@ -91,7 +86,6 @@ router.post('/', async function (req, res) {
     }
 });
 
-// Cập nhật đơn hàng
 router.put('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -114,7 +108,6 @@ router.put('/:id', async function (req, res) {
     }
 });
 
-// Xóa đơn hàng
 router.delete('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();

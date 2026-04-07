@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const roleSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true }, // VD: Admin, Warehouse_Staff, Accountant
+  name: { type: String, required: true, unique: true },
   description: { type: String },
-  permissions: [{ type: String }], // Danh sách các quyền (VD: 'read_product', 'write_order')
+  permissions: [{ type: String }],
   isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 

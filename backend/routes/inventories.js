@@ -10,9 +10,8 @@ require('../models/Product');
 require('../models/Warehouse');
 require('../models/User');
 
-const LOW_STOCK_THRESHOLD = 10; // ngưỡng cảnh báo tồn kho
+const LOW_STOCK_THRESHOLD = 10; 
 
-/* GET all inventories */
 router.get('/', async function (req, res, next) {
     try {
         let queries = req.query;
@@ -30,7 +29,6 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-/* GET danh sách tồn kho thấp + tự gửi mail cảnh báo cho admin */
 router.get('/low-stock', async function (req, res, next) {
     try {
         let lowStockItems = await inventoryModel.find({ quantity: { $lt: LOW_STOCK_THRESHOLD } })
@@ -38,7 +36,6 @@ router.get('/low-stock', async function (req, res, next) {
             .populate('warehouse');
 
         if (lowStockItems.length > 0) {
-            // Lấy email tất cả admin
             let adminRole = await roleModel.findOne({ name: 'admin', isDeleted: false });
             if (adminRole) {
                 let admins = await userModel.find({ role: adminRole._id, isDeleted: false });
@@ -65,7 +62,6 @@ router.get('/low-stock', async function (req, res, next) {
     }
 });
 
-/* GET inventory by ID */
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -82,7 +78,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create inventory */
 router.post('/', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -114,14 +109,12 @@ router.post('/', async function (req, res) {
     }
 });
 
-/* PUT update inventory - ghi audit log + gửi mail nếu tồn kho thấp */
 router.put('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {
         let id = req.params.id;
 
-        // Lấy số lượng cũ trước khi update
         let oldData = await inventoryModel.findById(id)
             .populate('product')
             .populate('warehouse')
@@ -138,7 +131,6 @@ router.put('/:id', async function (req, res) {
             lastUpdatedBy: req.body.lastUpdatedBy || null
         }, { returnDocument: 'after', session }).populate('product').populate('warehouse');
 
-        // Ghi audit log — ai cập nhật, số lượng cũ → mới
         logAction(
             req.body.lastUpdatedBy || null,
             'UPDATE',
@@ -155,7 +147,6 @@ router.put('/:id', async function (req, res) {
 
         await session.commitTransaction();
 
-        // Kiểm tra ngưỡng tồn kho → gửi mail cảnh báo (ngoài transaction)
         if (result.quantity < LOW_STOCK_THRESHOLD) {
             console.log(`[LOW STOCK] quantity=${result.quantity} < threshold=${LOW_STOCK_THRESHOLD} → tìm admin...`);
             let adminRole = await roleModel.findOne({ name: 'admin', isDeleted: false });
@@ -183,7 +174,6 @@ router.put('/:id', async function (req, res) {
     }
 });
 
-/* DELETE inventory */
 router.delete('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();

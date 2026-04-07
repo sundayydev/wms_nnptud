@@ -5,13 +5,12 @@ let categoryModel = require('../models/Category')
 let { logAction } = require('../utils/auditlogHandler')
 let { checkLogin } = require('../utils/authHandler')
 
-/* GET all categories */
+
 router.get('/', async function (req, res, next) {
   let data = await categoryModel.find();
   res.send(data);
 });
 
-/* GET category by ID */
 router.get('/:id', async function (req, res, next) {
   try {
     let id = req.params.id;
@@ -26,7 +25,6 @@ router.get('/:id', async function (req, res, next) {
   }
 });
 
-/* POST create category */
 router.post('/', checkLogin, async function (req, res) {
   let session = await mongoose.startSession();
   session.startTransaction();
@@ -48,7 +46,6 @@ router.post('/', checkLogin, async function (req, res) {
   }
 });
 
-/* PUT update category */
 router.put('/:id', checkLogin, async function (req, res) {
   let session = await mongoose.startSession();
   session.startTransaction();
@@ -72,7 +69,6 @@ router.put('/:id', checkLogin, async function (req, res) {
   }
 });
 
-/* DELETE category */
 router.delete('/:id', checkLogin, async function (req, res) {
   let session = await mongoose.startSession();
   session.startTransaction();

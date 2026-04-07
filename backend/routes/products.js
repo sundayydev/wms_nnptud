@@ -7,7 +7,6 @@ let { logAction } = require('../utils/auditlogHandler')
 let { checkLogin } = require('../utils/authHandler')
 let { deleteFromCloudinary } = require('../utils/cloudinaryHandler')
 
-/* GET all products */
 router.get('/', async function (req, res, next) {
     let queries = req.query;
     let nameQ = queries.name ? queries.name : '';
@@ -25,7 +24,6 @@ router.get('/', async function (req, res, next) {
     res.send(data);
 });
 
-/* GET product by ID */
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -40,7 +38,6 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create product */
 router.post('/', checkLogin, async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -74,7 +71,6 @@ router.post('/', checkLogin, async function (req, res) {
     }
 });
 
-/* PUT update product */
 router.put('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
@@ -105,7 +101,6 @@ router.put('/:id', checkLogin, async function (req, res) {
     }
 });
 
-/* DELETE product */
 router.delete('/:id', checkLogin, async function (req, res) {
     try {
         let id = req.params.id;
