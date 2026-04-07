@@ -2,19 +2,33 @@ import { useEffect, useState } from 'react';
 import { Table, Tag, Button, Tooltip, Modal } from 'antd';
 import { PrinterOutlined } from '@ant-design/icons';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
+import { supplierService } from '../../services/supplierService';
+import { warehouseService } from '../../services/warehouseService';
 import API_URL from '../../services/api';
 
 export default function UserPurchaseOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Dữ liệu từ điển
+  const [suppliers, setSuppliers] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await purchaseOrderService.getAll();
-      setOrders(data);
+      const [orderRes, supRes, whRes] = await Promise.all([
+        purchaseOrderService.getAll(),
+        supplierService.getAll(),
+        warehouseService.getAll()
+      ]);
+      setOrders(orderRes);
+      setSuppliers(supRes || []);
+      setWarehouses(whRes || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -22,17 +36,39 @@ export default function UserPurchaseOrders() {
     }
   };
 
-  const statusColor = { pending: 'orange', completed: 'green', cancelled: 'red' };
+  const getSupplierName = (id) => suppliers.find(s => s._id === id)?.name || id;
+  const getWarehouseName = (id) => warehouses.find(w => w._id === id)?.name || id;
 
   const columns = [
-    { title: 'Mã PO', dataIndex: '_id', key: '_id', render: id => id?.slice(-8).toUpperCase() },
-    { title: 'Nhà cung cấp', dataIndex: ['supplier', 'name'], key: 'supplier', render: v => v || '—' },
-    { title: 'Kho nhận', dataIndex: ['warehouse', 'name'], key: 'warehouse', render: v => v || '—' },
+    { 
+      title: 'Mã PO', 
+      dataIndex: 'poNumber', 
+      key: 'poNumber', 
+      render: (text, record) => text || record._id?.slice(-8).toUpperCase() 
+    },
+    { 
+      title: 'Nhà cung cấp', 
+      dataIndex: 'supplier', 
+      key: 'supplier', 
+      render: val => getSupplierName(val) || '—' 
+    },
+    { 
+      title: 'Kho nhận', 
+      dataIndex: 'warehouse', 
+      key: 'warehouse', 
+      render: val => getWarehouseName(val) || '—' 
+    },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: s => <Tag color={statusColor[s] || 'default'}>{s?.toUpperCase()}</Tag>,
+      render: s => {
+        let color = 'default';
+        if (s === 'Completed') color = 'green';
+        else if (s === 'Cancelled') color = 'red';
+        else if (s === 'Pending') color = 'orange';
+        return <Tag color={color} className="uppercase font-bold">{s}</Tag>
+      },
     },
     {
       title: 'Ngày tạo',
@@ -67,9 +103,9 @@ export default function UserPurchaseOrders() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-xl font-bold text-gray-800 mb-4">Đơn Nhập Hàng (PO)</h1>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
         <Table rowKey="_id" columns={columns} dataSource={orders} loading={loading} pagination={{ pageSize: 10 }} />
       </div>
     </div>
