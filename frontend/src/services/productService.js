@@ -25,6 +25,19 @@ export const productService = {
     return handleResponse(response);
   },
 
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/upload/one_file`, {
+      method: 'POST',
+      headers: { ...getAuthHeader() },
+      body: formData
+    });
+
+    return handleResponse(response);
+  },
+
   update: async (id, data) => {
     const response = await fetch(`${API_URL}/products/${id}`, {
       method: 'PUT',

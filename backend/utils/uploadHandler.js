@@ -9,7 +9,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Cấu hình Multer lưu file tạm vào thư mục uploads
-const storage = multer.diskStorage({
+const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
   },
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 // Middleware xử lý upload file Excel
 const uploadExcel = multer({
-  storage: storage,
+  storage: diskStorage,
   fileFilter: (req, file, cb) => {
     // Chỉ cho phép định dạng excel (.xlsx, .xls)
     if (
@@ -36,8 +36,18 @@ const uploadExcel = multer({
   }
 });
 
-// Middleware xử lý upload ảnh
-const uploadImage = multer({ storage: storage });
+// Middleware xử lý upload ảnh (lưu vào RAM để đẩy thẳng lên Cloudinary)
+const uploadImage = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ cho phép upload file ảnh'));
+    }
+  }
+});
 
 module.exports = {
   uploadExcel,

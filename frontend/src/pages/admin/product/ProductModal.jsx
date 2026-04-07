@@ -1,5 +1,5 @@
 import { Modal, Form, Input, InputNumber, Select, message, Upload, Button } from 'antd';
-import { InboxOutlined, UploadOutlined, EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { UploadOutlined, EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { productService } from '../../../services/productService';
 
@@ -8,16 +8,52 @@ const { TextArea } = Input;
 export default function ProductModal({ open, categories = [], onCancel, editingRecord, refreshData }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState('');
   
   useEffect(() => {
     if (open) {
       if (editingRecord) {
         form.setFieldsValue(editingRecord);
+        setImagePreview(editingRecord.image || '');
       } else {
         form.resetFields();
+        setImagePreview('');
       }
     }
   }, [editingRecord, form, open]);
+
+  const handleCustomUpload = async ({ file, onSuccess, onError }) => {
+    try {
+      setImageUploading(true);
+      const data = await productService.uploadImage(file);
+      form.setFieldsValue({ image: data.url, imagePublicId: data.public_id });
+      setImagePreview(data.url);
+      message.success('Upload ảnh lên Cloudinary thành công!');
+      onSuccess?.(data);
+    } catch (error) {
+      message.error('Upload ảnh thất bại: ' + error);
+      onError?.(new Error(error));
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const beforeImageUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('Chỉ hỗ trợ file ảnh!');
+      return Upload.LIST_IGNORE;
+    }
+
+    const isLt5MB = file.size / 1024 / 1024 < 5;
+    if (!isLt5MB) {
+      message.error('Ảnh phải nhỏ hơn 5MB');
+      return Upload.LIST_IGNORE;
+    }
+
+    return true;
+  };
 
   const handleOk = () => {
     form.validateFields()
@@ -66,6 +102,33 @@ export default function ProductModal({ open, categories = [], onCancel, editingR
       cancelButtonProps={{ className: "h-10 px-6 rounded-lg" }}
     >
       <Form form={form} layout="vertical" className="mt-6">
+        <Form.Item name="image" hidden>
+          <Input />
+        </Form.Item>
+        <Form.Item name="imagePublicId" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item label={<span className="font-semibold text-gray-700 text-[13px] uppercase tracking-wide">Ảnh Sản Phẩm</span>}>
+          <div className="flex items-center gap-4">
+            <div className="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+              {imagePreview ? (
+                <img src={imagePreview} alt="product" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs text-gray-400 px-2 text-center">Chưa có ảnh</span>
+              )}
+            </div>
+            <Upload
+              showUploadList={false}
+              customRequest={handleCustomUpload}
+              beforeUpload={beforeImageUpload}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />} loading={imageUploading}>Chọn ảnh và upload</Button>
+            </Upload>
+          </div>
+        </Form.Item>
+
         <div className="grid grid-cols-2 gap-x-8 gap-y-1">
           <Form.Item name="sku" label={<span className="font-semibold text-gray-700 text-[13px] uppercase tracking-wide">Mã SKU</span>} rules={[{ required: true, message: 'Nhập SKU' }]}>
             <Input size="large" placeholder="Ví dụ: SP-001" className="rounded-lg bg-gray-50/50 hover:bg-white focus:bg-white" />

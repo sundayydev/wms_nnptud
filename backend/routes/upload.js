@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 let { uploadExcel, uploadImage } = require('../utils/uploadHandler');
+let { uploadBufferToCloudinary } = require('../utils/cloudinaryHandler');
 let path = require('path');
 let excelJs = require('exceljs');
 let categoriesModel = require('../models/Category');
@@ -10,24 +11,39 @@ let warehousesModel = require('../models/Warehouse');
 let mongoose = require('mongoose');
 
 // API Upload hình lẻ
-router.post('/one_file', uploadImage.single('file'), function (req, res, next) {
-    res.send({
-        filename: req.file.filename,
-        path: req.file.path,
-        size: req.file.size
-    });
+router.post('/one_file', uploadImage.single('file'), async function (req, res, next) {
+    try {
+        let result = await uploadBufferToCloudinary(req.file);
+        res.send({
+            url: result.secure_url,
+            public_id: result.public_id,
+            width: result.width,
+            height: result.height,
+            format: result.format,
+            size: result.bytes
+        });
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
 });
 
 // API Upload nhiều hình
-router.post('/multiple_file', uploadImage.array('files', 5), function (req, res, next) {
-    console.log(req.body);
-    res.send(req.files.map(f => {
-        return {
-            filename: f.filename,
-            path: f.path,
-            size: f.size
-        };
-    }));
+router.post('/multiple_file', uploadImage.array('files', 5), async function (req, res, next) {
+    try {
+        let uploadResults = await Promise.all(req.files.map(file => uploadBufferToCloudinary(file)));
+        res.send(uploadResults.map(result => {
+            return {
+                url: result.secure_url,
+                public_id: result.public_id,
+                width: result.width,
+                height: result.height,
+                format: result.format,
+                size: result.bytes
+            };
+        }));
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
 });
 
 // Lấy file

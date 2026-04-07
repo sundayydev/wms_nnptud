@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Tag, Typography, Popconfirm, Tooltip, message, Card } from 'antd';
+import { Table, Space, Button, Tag, Typography, Popconfirm, Tooltip, message, Card, Image } from 'antd';
 import { EditOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
 import ProductFilter from './ProductFilter';
 import ProductModal from './ProductModal';
@@ -53,6 +53,14 @@ export default function AdminProduct() {
   };
 
   const columns = [
+    {
+      title: 'Ảnh',
+      dataIndex: 'image',
+      key: 'image',
+      width: 90,
+      align: 'center',
+      render: (image) => image ? <Image src={image} width={44} height={44} className="rounded-md object-cover" preview={false} /> : <Tag>Không có</Tag>
+    },
     { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 120, render: (text) => <Typography.Text type="secondary" strong>{text}</Typography.Text> },
     { 
       title: 'Tên Sản Phẩm', 
