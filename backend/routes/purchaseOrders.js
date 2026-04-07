@@ -3,7 +3,7 @@ var router = express.Router();
 let mongoose = require('mongoose');
 let purchaseOrderModel = require('../models/PurchaseOrder');
 
-/* GET all purchase orders */
+// Lấy tất cả
 router.get('/', async function (req, res, next) {
     try {
         let queries = req.query;
@@ -22,7 +22,7 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-/* GET purchase order by ID */
+// Lấy theo id
 router.get('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
@@ -38,7 +38,7 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-/* POST create purchase order */
+// tạo 1 đơn hàng mới
 router.post('/', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -91,7 +91,7 @@ router.post('/', async function (req, res) {
     }
 });
 
-/* PUT update purchase order */
+// Cập nhật đơn hàng
 router.put('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
@@ -114,7 +114,7 @@ router.put('/:id', async function (req, res) {
     }
 });
 
-/* DELETE purchase order */
+// Xóa đơn hàng
 router.delete('/:id', async function (req, res) {
     let session = await mongoose.startSession();
     session.startTransaction();
