@@ -15,6 +15,7 @@ export default function AdminLayout() {
     { key: 'customers', icon: <TeamOutlined />, label: <Link to="/admin/customers">Khách Hàng</Link> },
     { key: 'purchase-orders', icon: <ImportOutlined />, label: <Link to="/admin/purchase-orders">Nhập Hàng (PO)</Link> },
     { key: 'sales-orders', icon: <ExportOutlined />, label: <Link to="/admin/sales-orders">Xuất Hàng (SO)</Link> },
+    { key: 'shipments', icon: <ExportOutlined />, label: <Link to="/admin/shipments">Giao Hàng</Link> },
     { key: 'users', icon: <TeamOutlined />, label: <Link to="/admin/users">Tài Khoản</Link> },
     { key: 'auditlog', icon: <FileSearchOutlined />, label: <Link to="/admin/auditlog">Lịch Sử Thao Tác</Link> },
   ];

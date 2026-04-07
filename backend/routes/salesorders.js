@@ -45,6 +45,33 @@ router.post('/', async function (req, res) {
             createdBy: req.body.createdBy
         });
         await newItem.save({ session });
+
+        // Tự động trừ tồn kho (Inventory)
+        let inventoryModel = require('../models/Inventory');
+        if (req.body.items && req.body.items.length > 0) {
+            for (let item of req.body.items) {
+                let currentInv = await inventoryModel.findOne({
+                    product: item.product,
+                    warehouse: req.body.warehouse
+                }).session(session);
+
+                if (!currentInv || currentInv.quantity < item.quantity) {
+                    throw new Error(`Kho không đủ số lượng cho mã sản phẩm, vui lòng kiểm tra lại.`);
+                }
+
+                currentInv.quantity -= item.quantity;
+                await currentInv.save({ session });
+            }
+        }
+
+        let shipmentModel = require('../schemas/shipments');
+        let newShipment = new shipmentModel({
+            order: newItem._id, 
+            status: 'Preparing',
+            trackingNumber: `TRK-${newItem.soNumber || Date.now()}` 
+        });
+        await newShipment.save({ session });
+
         await session.commitTransaction();
         res.send(newItem);
     } catch (error) {

@@ -23,6 +23,7 @@ import AdminSalesOrder from '../pages/admin/salesOrder';
 import AdminInventory from '../pages/admin/inventory';
 import AdminUser from '../pages/admin/user';
 import AuditLog from '../pages/admin/AuditLog';
+import AdminShipment from '../pages/admin/shipments';
 
 // User Pages (nhân viên kho)
 import UserDashboard from '../pages/user/Dashboard';
@@ -30,6 +31,7 @@ import UserProducts from '../pages/user/Products';
 import UserInventory from '../pages/user/Inventory';
 import UserPurchaseOrders from '../pages/user/PurchaseOrders';
 import UserSalesOrders from '../pages/user/SalesOrders';
+import UserShipments from '../pages/user/shipments';
 
 export default function AppRouter() {
   return (
@@ -55,6 +57,7 @@ export default function AppRouter() {
             <Route path="inventories" element={<AdminInventory />} />
             <Route path="users" element={<AdminUser />} />
             <Route path="auditlog" element={<AuditLog />} />
+            <Route path="shipments" element={<AdminShipment />} />
           </Route>
         </Route>
 
@@ -66,6 +69,7 @@ export default function AppRouter() {
             <Route path="inventories" element={<UserInventory />} />
             <Route path="purchase-orders" element={<UserPurchaseOrders />} />
             <Route path="sales-orders" element={<UserSalesOrders />} />
+            <Route path="shipments" element={<UserShipments />} />
           </Route>
         </Route>
 
