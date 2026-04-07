@@ -41,7 +41,9 @@ app.use('/api/v1/sales-orders', require('./routes/salesorders'))
 app.use('/api/v1/shipments', require('./routes/shipments'))
 app.use('/api/v1/customers', require('./routes/customers'))
 app.use('/api/v1/inventories', require('./routes/inventories'))
+app.use('/api/v1/notifications', require('./routes/notifications'))
 app.use('/api/v1/print', require('./routes/print'))
+app.use('/api/v1/messages', require('./routes/messages'))
 mongoose.connect(process.env.MONGO_URI);
 mongoose.connection.on('connected', function () {
   console.log("connected");

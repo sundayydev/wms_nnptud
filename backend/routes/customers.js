@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
-let customerModel = require('../models/Customer')
-let { logAction } = require('../utils/auditlogHandler')
-let { checkLogin } = require('../utils/authHandler')
+let customerModel = require('../models/Customer');
+let { logAction } = require('../utils/auditlogHandler');
+let { checkLogin } = require('../utils/authHandler');
 
 router.get('/', async function (req, res, next) {
     let queries = req.query;
@@ -26,11 +26,11 @@ router.get('/:id', async function (req, res, next) {
             _id: id
         });
         if (result.length) {
-            res.send(result[0])
+            res.send(result[0]);
         } else {
             res.status(404).send({
                 message: "ID NOT FOUND"
-            })
+            });
         }
     } catch (error) {
         res.status(404).send({
@@ -39,7 +39,7 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-router.post('/', checkLogin, async function (req, res) {
+router.post('/', checkLogin, async function (req, res, next) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -64,7 +64,7 @@ router.post('/', checkLogin, async function (req, res) {
     }
 });
 
-router.put('/:id', checkLogin, async function (req, res) {
+router.put('/:id', checkLogin, async function (req, res, next) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -94,7 +94,7 @@ router.put('/:id', checkLogin, async function (req, res) {
     }
 });
 
-router.delete('/:id', checkLogin, async function (req, res) {
+router.delete('/:id', checkLogin, async function (req, res, next) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {

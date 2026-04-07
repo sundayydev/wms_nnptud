@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Table, Tag, Select, Input, Button, Tooltip } from 'antd';
-import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Tag, Select, Button, Tooltip } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { auditLogService } from '../../services/auditLogService';
 
-const { Option } = Select;
+let { Option } = Select;
 
-const actionColor = {
+let actionColor = {
   CREATE: 'green',
   UPDATE: 'blue',
   DELETE: 'red',
@@ -17,59 +17,70 @@ export default function AuditLog() {
   const [filterAction, setFilterAction] = useState('');
   const [filterCollection, setFilterCollection] = useState('');
 
-  useEffect(() => { fetchLogs(); }, [filterAction, filterCollection]);
+  useEffect(function () {
+    fetchLogs();
+  }, [filterAction, filterCollection]);
 
-  const fetchLogs = async () => {
+  async function fetchLogs() {
     setLoading(true);
     try {
       let query = '?';
-      if (filterAction) query += `action=${filterAction}&`;
-      if (filterCollection) query += `collectionName=${filterCollection}&`;
-      const data = await auditLogService.getAll(query);
+      if (filterAction) query += 'action=' + filterAction + '&';
+      if (filterCollection) query += 'collectionName=' + filterCollection + '&';
+      let data = await auditLogService.getAll(query);
       setLogs(data);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const columns = [
+  let columns = [
     {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
-      render: (d) => new Date(d).toLocaleString('vi-VN'),
+      render: function (d) {
+        return new Date(d).toLocaleString('vi-VN');
+      },
     },
     {
       title: 'Người thực hiện',
       dataIndex: 'user',
       key: 'user',
       width: 160,
-      render: (u) => u ? (
-        <span className="font-medium text-blue-600">{u.username}</span>
-      ) : <span className="text-gray-400 italic">Hệ thống</span>,
+      render: function (u) {
+        if (u) {
+          return <span className="font-medium text-blue-600">{u.username}</span>;
+        }
+        return <span className="text-gray-400 italic">Hệ thống</span>;
+      },
     },
     {
       title: 'Hành động',
       dataIndex: 'action',
       key: 'action',
       width: 110,
-      render: (a) => <Tag color={actionColor[a] || 'default'}>{a}</Tag>,
+      render: function (a) {
+        return <Tag color={actionColor[a] || 'default'}>{a}</Tag>;
+      },
     },
     {
       title: 'Đối tượng',
       dataIndex: 'collectionName',
       key: 'collectionName',
       width: 120,
-      render: (c) => <Tag>{c}</Tag>,
+      render: function (c) {
+        return <Tag>{c}</Tag>;
+      },
     },
     {
       title: 'Chi tiết thay đổi',
       dataIndex: 'changes',
       key: 'changes',
-      render: (changes) => {
+      render: function (changes) {
         if (!changes) return '—';
         // Nếu là inventory update thì format đẹp
         if (changes.quantityBefore !== undefined) {
@@ -98,7 +109,9 @@ export default function AuditLog() {
       dataIndex: 'ipAddress',
       key: 'ipAddress',
       width: 130,
-      render: (ip) => <span className="text-xs text-gray-400">{ip || '—'}</span>,
+      render: function (ip) {
+        return <span className="text-xs text-gray-400">{ip || '—'}</span>;
+      },
     },
   ];
 
@@ -115,7 +128,9 @@ export default function AuditLog() {
           placeholder="Lọc theo hành động"
           allowClear
           className="w-48"
-          onChange={(val) => setFilterAction(val || '')}
+          onChange={function (val) {
+            setFilterAction(val || '');
+          }}
         >
           <Option value="CREATE">CREATE</Option>
           <Option value="UPDATE">UPDATE</Option>
@@ -126,7 +141,9 @@ export default function AuditLog() {
           placeholder="Lọc theo đối tượng"
           allowClear
           className="w-48"
-          onChange={(val) => setFilterCollection(val || '')}
+          onChange={function (val) {
+            setFilterCollection(val || '');
+          }}
         >
           <Option value="inventory">Tồn kho</Option>
           <Option value="customer">Khách hàng</Option>
@@ -140,16 +157,19 @@ export default function AuditLog() {
           columns={columns}
           dataSource={logs}
           loading={loading}
-          pagination={{ 
-            pageSize: 10, 
-            showSizeChanger: true, 
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
             pageSizeOptions: ['10', '15', '20', '50', '100'],
-            showTotal: (total) => `Tổng ${total} thao tác` 
+            showTotal: function (total) {
+              return 'Tổng ' + total + ' thao tác';
+            }
           }}
-          rowClassName={(record) =>
-            record.action === 'DELETE' ? 'bg-red-50' :
-            record.action === 'UPDATE' && record.collectionName === 'inventory' ? 'bg-blue-50' : ''
-          }
+          rowClassName={function (record) {
+            if (record.action === 'DELETE') return 'bg-red-50';
+            if (record.action === 'UPDATE' && record.collectionName === 'inventory') return 'bg-blue-50';
+            return '';
+          }}
         />
       </div>
     </div>

@@ -1,43 +1,44 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Layouts
-import AdminLayout from '../layouts/AdminLayout';
-import UserLayout from '../layouts/UserLayout';
+import AdminLayout from "../layouts/AdminLayout";
+import UserLayout from "../layouts/UserLayout";
 
 // Guards
-import ProtectedRoute from '../components/ProtectedRoute';
+import ProtectedRoute from "../components/ProtectedRoute";
 
 // Auth Pages
-import Login from '../pages/Login';
-import SignUp from '../pages/SignUp';
+import Login from "../pages/Login";
+import SignUp from "../pages/SignUp";
 
 // Admin Pages
-import Dashboard from '../pages/admin/Dashboard';
-import AdminCategory from '../pages/admin/category';
-import AdminCustomer from '../pages/admin/customer';
-import AdminProduct from '../pages/admin/product';
-import AdminWarehouse from '../pages/admin/warehouse';
-import AdminSupplier from '../pages/admin/supplier';
-import AdminPurchaseOrder from '../pages/admin/purchaseOrder';
-import AdminSalesOrder from '../pages/admin/salesOrder';
-import AdminInventory from '../pages/admin/inventory';
-import AdminUser from '../pages/admin/user';
-import AuditLog from '../pages/admin/AuditLog';
-import AdminShipment from '../pages/admin/shipments';
+import Dashboard from "../pages/admin/Dashboard";
+import AdminCategory from "../pages/admin/category";
+import AdminCustomer from "../pages/admin/customer";
+import AdminProduct from "../pages/admin/product";
+import AdminWarehouse from "../pages/admin/warehouse";
+import AdminSupplier from "../pages/admin/supplier";
+import AdminPurchaseOrder from "../pages/admin/purchaseOrder";
+import AdminSalesOrder from "../pages/admin/salesOrder";
+import AdminInventory from "../pages/admin/inventory";
+import AdminUser from "../pages/admin/user";
+import AuditLog from "../pages/admin/AuditLog";
+import AdminShipment from "../pages/admin/shipments";
+import NotificationsPage from "../pages/Notifications";
 
 // User Pages (nhân viên kho)
-import UserDashboard from '../pages/user/Dashboard';
-import UserProducts from '../pages/user/Products';
-import UserInventory from '../pages/user/Inventory';
-import UserPurchaseOrders from '../pages/user/PurchaseOrders';
-import UserSalesOrders from '../pages/user/SalesOrders';
-import UserShipments from '../pages/user/shipments';
+import UserDashboard from "../pages/user/Dashboard";
+import UserProducts from "../pages/user/Products";
+import UserInventory from "../pages/user/Inventory";
+import UserPurchaseOrders from "../pages/user/PurchaseOrders";
+import UserSalesOrders from "../pages/user/SalesOrders";
+import UserShipments from "../pages/user/shipments";
+import UserChat from "../pages/user/Chat";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* Trang chủ → login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
@@ -58,6 +59,7 @@ export default function AppRouter() {
             <Route path="users" element={<AdminUser />} />
             <Route path="auditlog" element={<AuditLog />} />
             <Route path="shipments" element={<AdminShipment />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
 
@@ -70,17 +72,20 @@ export default function AppRouter() {
             <Route path="purchase-orders" element={<UserPurchaseOrders />} />
             <Route path="sales-orders" element={<UserSalesOrders />} />
             <Route path="shipments" element={<UserShipments />} />
+            <Route path="chat" element={<UserChat />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
 
-        <Route path="*" element={
-          <div className="h-screen flex items-center justify-center text-4xl font-black text-gray-300">
-            404 | NOT FOUND
-          </div>
-        } />
-
+        <Route
+          path="*"
+          element={
+            <div className="h-screen flex items-center justify-center text-4xl font-black text-gray-300">
+              404 | NOT FOUND
+            </div>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
 }
-

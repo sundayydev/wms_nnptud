@@ -2,6 +2,9 @@ var express = require('express');
 var router = express.Router();
 let mongoose = require('mongoose');
 let salesorderModel = require('../models/SalesOrder');
+let userModel = require('../models/User');
+let notificationModel = require('../models/Notification');
+let { EmitEvent } = require('../utils/socket');
 let inventoryModel = require('../models/Inventory');
 
 router.get('/', async function (req, res, next) {
@@ -72,7 +75,41 @@ router.post('/', async function (req, res) {
         });
         await newShipment.save({ session });
 
+        let activeUsers = await userModel.find({ isDeleted: false }).select('_id');
+        let notificationData = activeUsers.map(function (user) {
+            return {
+                recipient: user._id,
+                sender: newItem.createdBy || null,
+                title: 'Đơn hàng mới vừa được tạo',
+                content: `Đơn hàng ${newItem.soNumber} vừa được tạo với tổng tiền ${newItem.totalAmount}`,
+                type: 'sales-order-created',
+                referenceModel: 'SalesOrder',
+                referenceId: newItem._id,
+                isRead: false,
+                isDeleted: false
+            };
+        });
+        if (notificationData.length) {
+            await notificationModel.insertMany(notificationData, { session });
+        }
+
         await session.commitTransaction();
+        EmitEvent('sales-order-created', {
+            _id: newItem._id,
+            soNumber: newItem.soNumber,
+            customer: newItem.customer,
+            warehouse: newItem.warehouse,
+            totalAmount: newItem.totalAmount,
+            status: newItem.status,
+            createdAt: newItem.createdAt
+        });
+        EmitEvent('notification-created', {
+            type: 'sales-order-created',
+            referenceId: newItem._id,
+            recipientIds: activeUsers.map(function (user) {
+                return user._id.toString();
+            })
+        });
         res.send(newItem);
     } catch (error) {
         await session.abortTransaction();
