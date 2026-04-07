@@ -64,7 +64,7 @@ export default function UserLayout() {
 
       <Layout className="bg-slate-50">
         <Header className="bg-white px-6 shadow-sm flex items-center justify-between h-16 z-0 relative">
-          <span className="text-gray-500 text-sm font-medium">🏭 Cổng Nhân Viên Kho</span>
+          <span className="text-gray-500 text-sm font-medium"> Cổng Nhân Viên Kho</span>
           <Dropdown menu={dropdownItems} placement="bottomRight" trigger={['click']}>
             <div className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg hover:bg-gray-50 border border-gray-200 transition">
               <Avatar size={28} icon={<UserOutlined />} className="bg-green-500" />
